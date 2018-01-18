@@ -1,0 +1,11 @@
+COMS327-Assignment 0: nQueens
+
+To execute the code, run the following commands:
+
+make
+./nQueens
+
+This project was completed in C, using only 2 user defined functions. By default it is set to solve the n-Queens problem on a 8x8 chessboard.
+The user can change the 2 global variables to different sizes of a board and solve the n-queens problem. (e.g. 5x5, 10x10)
+The time complexity for this code is not that bad as it take less than a few milliseconds to solve for an 8x8 chessboard.
+This project was created with inspiration from the online programming website: https://leetcode.com/problems/n-queens/
