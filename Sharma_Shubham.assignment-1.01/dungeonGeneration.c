@@ -15,6 +15,8 @@ int COLS = 80;
 char DUNGEON[21][80];
 int failedRoomCreation =0;
 int numberOfRooms =0;
+int roomInformation[][4];
+int centroid[2];
 
 // Function to display the dungeon to the console 
 void printDungeon(){
@@ -162,6 +164,7 @@ void addTheRoom(int roomWidth, int roomHeight, int roomPosition[2]){
 
 	printDungeon();
 }
+
 void generateRooms(){
 
 	// The (0,0) / origin of the dungeon is the top left corner 
@@ -171,12 +174,15 @@ void generateRooms(){
 	// index 0 = y coordinate
 	// index 1 = x coordinate
 	int roomPosition[2];
+	//Decides how many rooms to create
+	int maxRooms;
+	maxRooms = pickAnumber(5,10);
+	
+	printf("numberOfRooms: %d",numberOfRooms );
+	printf(" maxRooms: %d\n",maxRooms );
 
 	// Checks if all the conditions are met while generating a room
-	//bool eveythinChecksOut = false;
-	
-
-	while (failedRoomCreation < 1000){
+	while (failedRoomCreation < 2000){
 		
 		roomWidth = pickAnumber(3,30);
 		roomHeight= pickAnumber(2,10);
@@ -185,19 +191,84 @@ void generateRooms(){
 		roomPosition[0] = roomYPosition;
 		roomPosition[1] = roomXPosition;
 		
-		if (allClear(roomWidth,roomHeight,roomPosition) && numberOfRooms < 10)
+		if (allClear(roomWidth,roomHeight,roomPosition) == true && numberOfRooms < maxRooms)
 		{
 			addTheRoom(roomWidth, roomHeight, roomPosition);
+			roomInformation[numberOfRooms][0] = roomWidth;
+			roomInformation[numberOfRooms][1] = roomHeight;
+			roomInformation[numberOfRooms][2] = roomPosition[0];
+			roomInformation[numberOfRooms][3] = roomPosition[1];
 			numberOfRooms++;
+			
 		}
 
 		failedRoomCreation++;
 	}
+	printf("numberOfRooms: %d",numberOfRooms );
+	printf(" maxRooms: %d\n",maxRooms );
 }
 
-
-int main (int argc, char *argv[]) {     srand(time(NULL));
+// Returns which roomNumber the given position is at
+int positionsRoomNumber(int row, int col){
 	
+	int i,j;
+
+	if (DUNGEON[row][col] != '.')
+		return -1;
+	
+	// Checks all room's left border
+	for(i=0; i< numberOfRooms; i++){
+		for(j=0; j<roomInformation[i][1]; j++){
+			if(roomInformation[i][2]+j == row && roomInformation[i][3] == col)
+				return i;
+		}
+	}
+
+
+	// Checks all room's top border
+	for(i=0; i< numberOfRooms; i++){
+		for(j=0; j<roomInformation[i][0]; j++){
+			if(roomInformation[i][3]+j == col && roomInformation[i][2] == row)
+				return i;
+		}
+	}
+
+
+	// Checks all room's right border
+	for(i=0; i< numberOfRooms; i++){
+		for(j=0; j<roomInformation[i][1]; j++){
+			if(roomInformation[i][2]+j == row && roomInformation[i][3]+roomInformation[i][0] == col)
+				return i;
+		}
+	}
+
+
+	// Checks all room's bottom border
+	for(i=0; i< numberOfRooms; i++){
+		for(j=0; j<roomInformation[i][0]; j++){
+			if(roomInformation[i][2]+roomInformation[i][1] == row && roomInformation[i][2] == col)
+				return i;
+		}
+	}
+
+	return 0;
+}
+
+// Generates corridors across the dungeon
+void generateCorridors(){
+
+
+
+}
+
+void findRoomsCentroid(int roomNumber){
+	centroid[0] = (roomInformation[roomNumber][3])/2;
+	centroid[1] = (roomInformation[roomNumber][2])/2;
+}
+
+int main (int argc, char *argv[]) {     
+	
+	srand(time(NULL));
 	int i,j;
 
 	for(i=0; i<ROWS; i++){
@@ -205,7 +276,7 @@ int main (int argc, char *argv[]) {     srand(time(NULL));
 			DUNGEON[i][j] = ' ';
 		}
 	}
-	/*
+/*	
 	int roomPosition[2] = {7,24};
 	bool ret = allClear(7,8,roomPosition);
 	if(ret){
@@ -216,22 +287,27 @@ int main (int argc, char *argv[]) {     srand(time(NULL));
 	}
 	
 
-	roomPosition[0] = 1;
+	roomPosition[0] = 10;
 	roomPosition[1] = 17;
-	ret = allClear(13, 10,roomPosition);
+	ret = allClear(3, 3,roomPosition);
 	if(ret){
-		addTheRoom(13,10,roomPosition);
+		addTheRoom(3,3,roomPosition);
 	}
 	else
 		printf("Incorrect!\n");
-	*/
+	
+	printf("%d\n", positionsRoomNumber(17,10));
+*/
 	generateRooms();
 	printDungeon();
+	for(i=0; i<numberOfRooms; i++){
+		printf("%d %d %d %d\n",roomInformation[i][0],roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
+	}
 
-
+	generateCorridors();
+	printDungeon();
+	
 	
 	return 0;
 }
-
-
 
