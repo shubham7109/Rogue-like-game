@@ -16,6 +16,7 @@ char DUNGEON[21][80];
 int failedRoomCreation =0;
 int numberOfRooms =0;
 int roomInformation[][4];
+int roomEdgeInformation[][2];
 int centroid[2];
 
 // Function to display the dungeon to the console 
@@ -257,10 +258,49 @@ int positionsRoomNumber(int row, int col){
 // Generates corridors across the dungeon
 void generateCorridors(){
 
-
+	generateRoomEdge();
 
 }
 
+void generateRoomEdge(){
+
+	int i,j;
+	// Pickes a side such a top, bottom, left or right
+	int side;
+	int xPosition;
+	int yPosition;
+
+	for(i=0; i<numberOfRooms; i++)
+	{
+		side = pickAnumber(1,4);
+		// Left side
+		if(side == 1){
+		xPosition = roomInformation[i][3];
+		yPosition = pickAnumber(roomInformation[i][2],roomInformation[i][2]+roomInformation[i][1]-1);
+		}
+		//Top Side
+		if(side == 2){
+		xPosition = pickAnumber(roomInformation[i][3],roomInformation[i][3]+roomInformation[i][0]-1);
+		yPosition = roomInformation[i][2];
+		}
+		//Right Side
+		if(side == 3){
+		xPosition = roomInformation[i][3] + roomInformation[i][0]-1;
+		yPosition = pickAnumber(roomInformation[i][2],roomInformation[i][2]+roomInformation[i][1]-1);
+		}
+		//Bottom Side
+		if(side == 4){
+		xPosition = pickAnumber(roomInformation[i][3],roomInformation[i][3]+roomInformation[i][0]-1);
+		yPosition = roomInformation[i][2] + roomInformation[i][1]-1;
+		}
+		roomEdgeInformation[i][0] = xPosition;
+		roomEdgeInformation[i][1] = yPosition;
+		printf("%d: Side picked:%d xPosition:%d yPosition:%d\n",i,side,xPosition, yPosition);
+	}
+}
+
+// TODO
+// Do i need this?
 void findRoomsCentroid(int roomNumber){
 	centroid[0] = (roomInformation[roomNumber][3])/2;
 	centroid[1] = (roomInformation[roomNumber][2])/2;
@@ -301,10 +341,13 @@ int main (int argc, char *argv[]) {
 	generateRooms();
 	printDungeon();
 	for(i=0; i<numberOfRooms; i++){
-		printf("%d %d %d %d\n",roomInformation[i][0],roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
+		printf("%d: roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n",i,roomInformation[i][0],roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
 	}
 
 	generateCorridors();
+	for(i=0; i<numberOfRooms; i++){
+		DUNGEON[roomEdgeInformation[i][1]][roomEdgeInformation[i][0]] = i+'0';
+	}
 	printDungeon();
 	
 	
