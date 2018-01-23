@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <time.h> // For srand() to truely get a random value
+#include <time.h> // For srand() to truly get a random value
 #include <stdlib.h> // For rand()
 #include <stdbool.h> // For boolean variables
 
@@ -16,7 +16,7 @@ char DUNGEON[21][80];
 int failedRoomCreation =0;
 int numberOfRooms =0; // Keeps track of the number of rooms generated
 int roomInformation[10][4]; // Keeps track of the info of each room
-int roomEdgeInformation[10][2]; // Keeps track of the points cooridoors reach
+int roomEdgeInformation[10][2]; // Keeps track of the points corridors reach
 
 
 // Function to display the dungeon to the console 
@@ -210,7 +210,7 @@ int getRoomInformationVlaue(int leftIndex, int rightIndex){
 	return value;
 }
 
-// Generates edge points for the cooridoors to connect across the rooms
+// Generates edge points for the corridors to connect across the rooms
 void generateRoomEdge(){
 
 	int i;
