@@ -15,10 +15,10 @@ int COLS = 80;
 char DUNGEON[21][80];
 int failedRoomCreation =0;
 int numberOfRooms =0;
-int roomInformation[][4];
-int roomEdgeInformation[][2];
+int roomInformation[10][4];
+int roomEdgeInformation[10][2];
 int centroid[2];
-int storedRoomInformation[][4];
+int storedRoomInformation[10][4];
 // Function to display the dungeon to the console 
 void printDungeon(){
 
@@ -215,9 +215,6 @@ void generateRoomEdge(){
 
 	int i,j;
 	// Pickes a side such a top, bottom, left or right
-	int side;
-	for(i=0; i<numberOfRooms; i++)
-		printf("BEFORE: roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n",roomInformation[i][0], roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
 
 	for(i=0; i<numberOfRooms; i++)
 	{
@@ -226,9 +223,6 @@ void generateRoomEdge(){
 		roomEdgeInformation[i][0] = pickAnumber(yPosition,(yPosition-1)+getRoomInformationVlaue(i,1));
 		roomEdgeInformation[i][1] = pickAnumber(xPosition,(xPosition-1)+getRoomInformationVlaue(i,0));
 	}
-
-	for(i=0; i<numberOfRooms; i++)
-		printf("AFTER: roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n",roomInformation[i][0], roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
 
 }
 
@@ -243,11 +237,9 @@ void generateCorridors(){
 	corridorXPosition = roomEdgeInformation[0][1];
 	corridorYPosition = roomEdgeInformation[0][0];
 	int tries =0;
+
 	for(i=0; i<numberOfRooms-1; i++){
 		j = i+1; // Where i is the room1 and j is the next room
-		corridorXPosition = roomEdgeInformation[i][1];
-		corridorYPosition = roomEdgeInformation[i][0];
-
 		int diffX =9;
 		int diffY =9;
 		while( diffY != 0 || diffX != 0)
@@ -257,8 +249,13 @@ void generateCorridors(){
 			diffX = corridorXPosition - roomEdgeInformation[j][1];
 			
 			
-			if (DUNGEON[corridorYPosition][corridorYPosition] == ' '){
+			if (DUNGEON[corridorYPosition][corridorXPosition] != '.'){
+				/*
+				printf("This is a space: corridorXPosition:%d corridorYPosition:%d DUNGEON[corridorYPosition][corridorYPosition]:[%c].\n",
+					corridorXPosition,corridorYPosition,DUNGEON[corridorYPosition][corridorXPosition]);
+				*/
 				DUNGEON[corridorYPosition][corridorXPosition] = '#';
+				//printDungeon();
 			}
 
 
@@ -296,6 +293,11 @@ int main (int argc, char *argv[]) {
 	generateRooms();
 	generateRoomEdge();
 	generateCorridors();
+	/*
+	for(i=0; i<numberOfRooms; i++)
+	{
+		DUNGEON[roomEdgeInformation[i][0]][roomEdgeInformation[i][1]] = i + '0';
+	}*/
 	printDungeon();
 
 	return 0;
