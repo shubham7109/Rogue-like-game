@@ -156,7 +156,7 @@ bool allClear(int roomWidth, int roomHeight, int roomPosition[2]){
 
 void addTheRoom(int roomWidth, int roomHeight, int roomPosition[2]){
 	int i,j;
-	printf("roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n", roomWidth, roomHeight, roomPosition[0], roomPosition[1] );
+	
 	for(i=roomPosition[0]; i<roomHeight+roomPosition[0]; i++){
 		for(j=roomPosition[1]; j<roomWidth+roomPosition[1]; j++){
 			DUNGEON[i][j] = '.';
@@ -179,8 +179,6 @@ void generateRooms(){
 	int maxRooms;
 	maxRooms = pickAnumber(5,10);
 	
-	printf("numberOfRooms: %d",numberOfRooms );
-	printf(" maxRooms: %d\n",maxRooms );
 
 	// Checks if all the conditions are met while generating a room
 	while (failedRoomCreation < 2000){
@@ -205,121 +203,33 @@ void generateRooms(){
 
 		failedRoomCreation++;
 	}
-	printf("numberOfRooms: %d",numberOfRooms );
-	printf(" maxRooms: %d\n",maxRooms );
 }
 
-// Returns which roomNumber the given position is at
-int positionsRoomNumber(int row, int col){
-	
-	int i,j;
+int getRoomInformationVlaue(int leftIndex, int rightIndex){
 
-	if (DUNGEON[row][col] == '#'){
-		printf("There is already #\n");
-		return -1;
-	}
-	if (DUNGEON[row][col] != '.'){
-		printf("This should be an empty space\n");
-		return -1;
-	}
-	
-	int roomPosition[2] = {row,col};
-
-	// if its at the border
-	if(roomPosition[0] <= 0 || roomPosition[1] <= 0 ||(roomPosition[0]) >= (ROWS-1) || (roomPosition[1] >= (COLS-1))){
-		return -2;
-	}
-
-	for(i=0; i<numberOfRooms; i++){
-		printf("Method: %d: roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n",i,roomInformation[i][0],roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
-	}
-	int leftComp, rightComp;
-	for(i=0; i< numberOfRooms; i++){
-		printf("enters the loop\n");
-		// Checks X bounds
-		leftComp = storedRoomInformation[i][3];
-		rightComp = col;
-		printf("1: leftComp:%d rightComp:%d\n",leftComp,rightComp);
-		if(leftComp <= rightComp) {
-			printf("ENTERED STAGE 1\n");
-
-
-			leftComp = (roomInformation[i][3]+roomInformation[i][0]-1);
-			rightComp = col;
-			printf("2: leftComp:%d rightComp:%d\n",leftComp,rightComp);
-			if(leftComp  >= rightComp){
-				printf("ENTERED STAGE 2\n");
-
-				
-				leftComp = roomInformation[i][2];
-				rightComp = row;
-				printf("3: leftComp:%d rightComp:%d\n",leftComp,rightComp);
-				// Checks Y bounds
-				if( leftComp<= rightComp){
-					printf("ENTERED STAGE 3\n");
-
-				
-					leftComp = (roomInformation[i][2]+roomInformation[i][1]-1);
-					rightComp = row;
-					printf("4: leftComp:%d rightComp:%d\n",leftComp,rightComp);
-					if(leftComp >= rightComp){
-						printf("ENTERED STAGE 4\n");
-						return i;	
-					}
-				}
-			}
-		}
-	}
-
-	printf("End Returned -1: row:%d , col:%d\n",row,col );
-
-	return -1;
+	int value = roomInformation[leftIndex][rightIndex];
+	return value;
 }
-
 
 void generateRoomEdge(){
 
 	int i,j;
 	// Pickes a side such a top, bottom, left or right
 	int side;
-	int xPosition;
-	int yPosition;
+	for(i=0; i<numberOfRooms; i++)
+		printf("BEFORE: roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n",roomInformation[i][0], roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
 
 	for(i=0; i<numberOfRooms; i++)
 	{
-		side = pickAnumber(1,4);
-		// Left side
-		if(side == 1){
-		xPosition = roomInformation[i][3];
-		yPosition = pickAnumber(roomInformation[i][2],roomInformation[i][2]+roomInformation[i][1]-1);
-		}
-		//Top Side
-		if(side == 2){
-		xPosition = pickAnumber(roomInformation[i][3],roomInformation[i][3]+roomInformation[i][0]-1);
-		yPosition = roomInformation[i][2];
-		}
-		//Right Side
-		if(side == 3){
-		xPosition = roomInformation[i][3] + roomInformation[i][0]-1;
-		yPosition = pickAnumber(roomInformation[i][2],roomInformation[i][2]+roomInformation[i][1]-1);
-		}
-		//Bottom Side
-		if(side == 4){
-		xPosition = pickAnumber(roomInformation[i][3],roomInformation[i][3]+roomInformation[i][0]-1);
-		yPosition = roomInformation[i][2] + roomInformation[i][1]-1;
-		}
-		roomEdgeInformation[i][1] = xPosition;
-		roomEdgeInformation[i][0] = yPosition;
-		printf("%d: Side picked:%d numberOfRooms:%d xPosition:%d yPosition:%d\n",i,side,numberOfRooms,xPosition, yPosition);
+		int xPosition = getRoomInformationVlaue(i,3);
+		int yPosition = getRoomInformationVlaue(i,2);
+		roomEdgeInformation[i][0] = pickAnumber(yPosition,(yPosition-1)+getRoomInformationVlaue(i,1));
+		roomEdgeInformation[i][1] = pickAnumber(xPosition,(xPosition-1)+getRoomInformationVlaue(i,0));
 	}
-/*
-		for(i=0; i<numberOfRooms; i++){
-		DUNGEON[roomEdgeInformation[i][0]][roomEdgeInformation[i][1]] = i+'0';
-		}
 
-		printDungeon();
+	for(i=0; i<numberOfRooms; i++)
+		printf("AFTER: roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n",roomInformation[i][0], roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
 
-*/
 }
 
 
@@ -327,7 +237,6 @@ void generateRoomEdge(){
 void generateCorridors(){
 
 	int i,j;
-	int diffX, diffY;
 	int corridorXPosition, corridorYPosition;
 	bool isNegX = false, isNegY = false;
 	int roomNumber;
@@ -338,37 +247,22 @@ void generateCorridors(){
 		j = i+1; // Where i is the room1 and j is the next room
 		corridorXPosition = roomEdgeInformation[i][1];
 		corridorYPosition = roomEdgeInformation[i][0];
-		roomNumber = positionsRoomNumber(corridorYPosition, corridorXPosition);
-		printf("Bruuh: %d\n",roomNumber);
-		while( tries < 50)
+
+		int diffX =9;
+		int diffY =9;
+		while( diffY != 0 || diffX != 0)
 		{
 
 			diffY = corridorYPosition - roomEdgeInformation[j][0];
 			diffX = corridorXPosition - roomEdgeInformation[j][1];
 			
-			// TODO
-			// DO I REALLY NEEEEED THIS ?
-			if (diffX < 0){
-				isNegX = true;
-			}
-			if(diffY < 0){
-				isNegY = true;
-			}
-			// TILL HERE ^^^^^
-			printf("i:%d tries:%d corridorXPosition:%d corridorYPosition:%d diffX:%d diffY:%d roomNumber:%d\n",i,tries,corridorXPosition,corridorYPosition,diffX,diffY,roomNumber);
-		
-			if (roomNumber == -1){
-				printf("Enters if statement\n");
+			
+			if (DUNGEON[corridorYPosition][corridorYPosition] == ' '){
 				DUNGEON[corridorYPosition][corridorXPosition] = '#';
-				printDungeon();
 			}
 
-			if(roomNumber == -2){
-				printf("DONT GO THERE!!!\n");
-				// The corridor is going to the borders
-			}
 
-				// Move closer to position
+			// Move closer to position
 			if(diffX < 0)
 				corridorXPosition++;
 			else if (diffX > 0)
@@ -379,10 +273,6 @@ void generateCorridors(){
 			else if(diffY > 0)
 				corridorYPosition--;
 
-
-			roomNumber = positionsRoomNumber(corridorYPosition, corridorXPosition);
-
-			tries++;
 		}
 	}
 
@@ -401,64 +291,10 @@ int main (int argc, char *argv[]) {
 			DUNGEON[i][j] = ' ';
 		}
 	}
-/*
-	int roomPosition[2] = {2,20};
-	bool ret = allClear(12,6,roomPosition);
-	if(ret){
-		addTheRoom(12,6,roomPosition);
-	}
-	else{
-		printf("Incorrect!\n");
-	}
-	
 
-	roomPosition[0] = 10;
-	roomPosition[1] = 17;
-	ret = allClear(3, 3,roomPosition);
-	if(ret){
-		addTheRoom(3,3,roomPosition);
-	}
-	else
-		printf("Incorrect!\n");
-	
-	printDungeon();
-	numberOfRooms = 2;
-	roomInformation[0][0] = 12;
-	roomInformation[0][1] = 6;
-	roomInformation[0][2] = 2;
-	roomInformation[0][3] = 20;
-
-	roomInformation[1][0] = 3;
-	roomInformation[1][1] = 3;
-	roomInformation[1][2] = 10;
-	roomInformation[1][3] = 17;
-
-	printf("%d\n",positionsRoomNumber(4,21) );
-
-*/
 
 	generateRooms();
-	printDungeon();
-	for(i=0; i<numberOfRooms; i++){
-		printf("%d: roomWidth:%d roomHeight:%d yPosition:%d xPosition:%d\n",i,roomInformation[i][0],roomInformation[i][1],roomInformation[i][2],roomInformation[i][3]);
-	}
-
-	for(i=0; numberOfRooms; i++){
-		int value1,value2,value3,value4;
-		value1 = roomInformation[i][0];
-		value2 = roomInformation[i][1];
-		value3 = roomInformation[i][2];
-		value4 = roomInformation[i][3];
-		printf("%d\n",numberOfRooms);
-
-		storedRoomInformation[i][0] = value1;
-		storedRoomInformation[i][1] = value2;
-		storedRoomInformation[i][2] = value3;
-		storedRoomInformation[i][3] = value4;
-	}
-
 	generateRoomEdge();
-	printDungeon();
 	generateCorridors();
 	printDungeon();
 
