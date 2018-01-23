@@ -1,0 +1,10 @@
+01/20/18: Started the assignment with a basic understanding in mind
+01/20/18: Getting familiar with the debugging process
+01/21/18: Experimenting with array bounds and figuring out what works best with a dungeon of the specification
+01/21/18: Properly defined and initialized each global variable
+01/22/18: Figured out that rand() does not give different sequence every time, hence including time.h for help. 
+01/22/18: Finished functions to print out the dungeon
+01/22/18: Finished functions to randomly generate rooms and print out the updated dungeon
+01/22/18: Finished the corridors logic to connect each room and made sure it works with the given assignment specifications
+01/23/18: Tested and demoed the code to Dr. Jeremy Sheaffer 
+01/23/18: Finalized the project by adding comments

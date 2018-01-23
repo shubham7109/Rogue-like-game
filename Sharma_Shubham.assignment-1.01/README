@@ -1,0 +1,13 @@
+COMS327-Assignment 1.01: Dungeon Generation
+
+To execute the code, run the following commands:
+
+make
+./dungeonGeneration
+
+This project was completed in C, using multiple user defined functions. It is designed to generate multiple rooms and dungeons to connect them.
+It has up-to 8 user defined functions with a couple of global variables to keep track of all the dungeon information.
+The time complexity for this code is not that bad as it take less than a few milliseconds generate the whole dungeon using the assignment specs.
+
+If there is any issue with the code, please email: shubham@iastate.edu
+

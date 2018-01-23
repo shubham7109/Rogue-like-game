@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <time.h>
+#include <time.h> // For srand() to truely get a random value
 #include <stdlib.h> // For rand()
 #include <stdbool.h> // For boolean variables
 
@@ -14,11 +14,11 @@ int ROWS = 21;
 int COLS = 80;
 char DUNGEON[21][80];
 int failedRoomCreation =0;
-int numberOfRooms =0;
-int roomInformation[10][4];
-int roomEdgeInformation[10][2];
-int centroid[2];
-int storedRoomInformation[10][4];
+int numberOfRooms =0; // Keeps track of the number of rooms generated
+int roomInformation[10][4]; // Keeps track of the info of each room
+int roomEdgeInformation[10][2]; // Keeps track of the points cooridoors reach
+
+
 // Function to display the dungeon to the console 
 void printDungeon(){
 
@@ -51,16 +51,14 @@ void printDungeon(){
 	printf("\n\n");
 }
 
+// Picks a number between the bounds with the bounds included in the range
 int pickAnumber(int min, int max){
 
+	// This function was inspired from a code on StackOverflow
 	int r;
     int range = 1 + max - min;
 	int buckets = RAND_MAX / range;
 	int limit = buckets * range;
-
-    /* Create equal size buckets all in a row, then fire randomly towards
-     * the buckets until you land in one of them. All buckets are equally
-     * likely. If you land off the end of the line of buckets, try again. */
     do
     {
         r = rand();
@@ -68,6 +66,8 @@ int pickAnumber(int min, int max){
 
     return min + (r / buckets);
 }
+
+// Checks if the room can spawn in the given information of the room
 bool allClear(int roomWidth, int roomHeight, int roomPosition[2]){
 
 	// For roomPosition[]
@@ -80,8 +80,7 @@ bool allClear(int roomWidth, int roomHeight, int roomPosition[2]){
 			if(DUNGEON[i][j] == '.'){
 				//printf("overlaps \n");
 				return false;
-			}
-				
+			}	
 		}
 	}
 	
@@ -150,10 +149,11 @@ bool allClear(int roomWidth, int roomHeight, int roomPosition[2]){
 			
 	}
 
-
+	// No flags raised, hence a room can spawn in the given position
 	return true;
 }
 
+// Inserts the room in the dungeon using the given information
 void addTheRoom(int roomWidth, int roomHeight, int roomPosition[2]){
 	int i,j;
 	
@@ -162,10 +162,9 @@ void addTheRoom(int roomWidth, int roomHeight, int roomPosition[2]){
 			DUNGEON[i][j] = '.';
 		}
 	}
-
-	//printDungeon();
 }
 
+// Generates min 5 rooms in the dungeon following the assignment specs
 void generateRooms(){
 
 	// The (0,0) / origin of the dungeon is the top left corner 
@@ -205,15 +204,16 @@ void generateRooms(){
 	}
 }
 
+// Returns the information of the room (like width/height)
 int getRoomInformationVlaue(int leftIndex, int rightIndex){
-
 	int value = roomInformation[leftIndex][rightIndex];
 	return value;
 }
 
+// Generates edge points for the cooridoors to connect across the rooms
 void generateRoomEdge(){
 
-	int i,j;
+	int i;
 	// Pickes a side such a top, bottom, left or right
 
 	for(i=0; i<numberOfRooms; i++)
@@ -223,20 +223,15 @@ void generateRoomEdge(){
 		roomEdgeInformation[i][0] = pickAnumber(yPosition,(yPosition-1)+getRoomInformationVlaue(i,1));
 		roomEdgeInformation[i][1] = pickAnumber(xPosition,(xPosition-1)+getRoomInformationVlaue(i,0));
 	}
-
 }
 
-
-// Generates corridors across the dungeon
+// Generates all corridors across the dungeon following assignment specs
 void generateCorridors(){
 
 	int i,j;
 	int corridorXPosition, corridorYPosition;
-	bool isNegX = false, isNegY = false;
-	int roomNumber;
 	corridorXPosition = roomEdgeInformation[0][1];
 	corridorYPosition = roomEdgeInformation[0][0];
-	int tries =0;
 
 	for(i=0; i<numberOfRooms-1; i++){
 		j = i+1; // Where i is the room1 and j is the next room
@@ -244,20 +239,12 @@ void generateCorridors(){
 		int diffY =9;
 		while( diffY != 0 || diffX != 0)
 		{
-
 			diffY = corridorYPosition - roomEdgeInformation[j][0];
 			diffX = corridorXPosition - roomEdgeInformation[j][1];
 			
-			
 			if (DUNGEON[corridorYPosition][corridorXPosition] != '.'){
-				/*
-				printf("This is a space: corridorXPosition:%d corridorYPosition:%d DUNGEON[corridorYPosition][corridorYPosition]:[%c].\n",
-					corridorXPosition,corridorYPosition,DUNGEON[corridorYPosition][corridorXPosition]);
-				*/
 				DUNGEON[corridorYPosition][corridorXPosition] = '#';
-				//printDungeon();
 			}
-
 
 			// Move closer to position
 			if(diffX < 0)
@@ -269,35 +256,30 @@ void generateCorridors(){
 				corridorYPosition++;
 			else if(diffY > 0)
 				corridorYPosition--;
-
 		}
 	}
-
-
-
 }
 
-
+// The main function of the code
 int main (int argc, char *argv[]) {     
 	
+	// To ensure the code is truly random
 	srand(time(NULL));
 	int i,j;
 
+	// Creates a blank dungeon
 	for(i=0; i<ROWS; i++){
 		for(j=0; j<COLS; j++){
 			DUNGEON[i][j] = ' ';
 		}
 	}
 
-
+	// The brains of the code
 	generateRooms();
 	generateRoomEdge();
 	generateCorridors();
-	/*
-	for(i=0; i<numberOfRooms; i++)
-	{
-		DUNGEON[roomEdgeInformation[i][0]][roomEdgeInformation[i][1]] = i + '0';
-	}*/
+
+	// Prints the final DUNGEON
 	printDungeon();
 
 	return 0;
