@@ -856,7 +856,7 @@ int main(int argc, char *argv[])
     printf("Done saving!\n");
   }
 
-  if(argc < 0 ){
+  if(argc == 0 ){
     printf("Using seed: %u\n", seed);
     srand(seed);
     init_dungeon(&d);
