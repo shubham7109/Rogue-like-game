@@ -821,8 +821,49 @@ void load_dungeon(char *fileName, dungeon_t *dungeon){
 
 }
 
-void save_dungeon(){
+void save_dungeon(dungeon_t *dungeon){
   printf("Saving dungeon\n");
+  char *fileName = "dungeon.rlg327";
+  char *filePath = concat(getenv("HOME"),"/.rlg327/");
+  filePath = concat(filePath,fileName);
+  // Test file name : 1521618087.rlg327
+  printf("filePath: %s\n",filePath);
+
+  FILE *file;
+  file = fopen(filePath, "wb");
+  free(filePath);
+
+  // Checks if file is created
+  if(file == NULL){
+    printf("Error creating file, exiting ...\n");
+    exit(1);
+  }
+
+  // Bytes: 0-11: File type marker
+  char fileMarker[12] = "RLG327-S2018";
+  fwrite(&fileMarker, 12, 1, file);
+
+
+  // Read byte 12-15: Version marker with value 0
+  int version =0;
+  fwrite(&version , 4, 1, file);
+
+
+  // Read byte 16-19: File size uns32bit
+  // 20 accounts for the fileMarker and version marker
+  int fileSize = (4 * dungeon->num_rooms)+(DUNGEON_X*DUNGEON_Y)+(20);
+  printf("fileSize: %d\n", fileSize);
+  // converts the byte encoding of integer values
+  // from the byte order that the current CPU (the "host") uses, to
+  // and from little-endian and big-endian byte order.
+  // https://linux.die.net/man/3/be32toh
+  fileSize = htobe32(fileSize);
+  fwrite(&fileSize , 4, 1, file);
+
+  // Read byte 20–1699: Read hardness of the cell
+
+
+
 }
 
 
@@ -854,7 +895,7 @@ int main(int argc, char *argv[])
     init_dungeon(&d);
     gen_dungeon(&d);
     render_dungeon(&d);
-    save_dungeon();
+    save_dungeon(&d);
     printf("Done saving!\n");
   }
 
