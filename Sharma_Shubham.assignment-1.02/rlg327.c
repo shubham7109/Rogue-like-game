@@ -696,11 +696,11 @@ char* concat(const char *s1, const char *s2)
 
 void load_dungeon(char *fileName){
   printf("Loading dungeon\n");
-  printf("FileName:%s\n", fileName);
+  printf("FileName: %s\n", fileName);
   char *filePath = concat(getenv("HOME"),"/.rlg327/");
   filePath = concat(filePath,fileName);
   // Test file name : 1521618087.rlg327
-  printf("%s\n",filePath);
+  printf("filePath: %s\n",filePath);
 
   FILE *file;
   file = fopen(filePath, "rb");
@@ -716,14 +716,15 @@ void load_dungeon(char *fileName){
   char fileMarker[12];
   int version;
   int fileSize;
+  int i;
   // This dungeon will be able to differentiate against
   // rock and (room/corridor)
-  uint8_t dungeon_phase1[DUNGEON_X][DUNGEON_Y]; // [Dr. Sheaffer's note] Use unit8_t instead of unit32_t
-
+  uint8_t dungeon_forcedMap[DUNGEON_Y][DUNGEON_X]; // [Dr. Sheaffer's note] Use unit8_t instead of unit32_t
+  char dungeonMap[DUNGEON_Y][DUNGEON_X];
 
   // Read byte 0-11: File type marker
   fread(&fileMarker, 12, 1, file);
-  printf("fileMarker:%s\n", fileMarker);
+  printf("fileMarker: %s\n", fileMarker);
   if (strcmp(fileMarker,"RLG327-S2018") != 0){
     printf("Incorrect file type marker, exiting ...\n");
     exit(1);
@@ -746,32 +747,75 @@ void load_dungeon(char *fileName){
   // https://linux.die.net/man/3/be32toh
 
   fileSize = (int) be32toh(fileSize);
-  printf("fileSize:%d\n", fileSize );
+  printf("fileSize: %d bytes\n", fileSize );
   if(fileSize <= 0){
     printf("Error with file size, exiting ...\n");
     exit(1);
   }
 
 
-
+  // Read byte 20–1699: Read hardness of the cell
+  // Lets start creating the dungeon_t
+  //int dungeonVals[DUNGEON_Y][DUNGEON_X];
+  //dungeon_t dungeon;
   int x,y;
   for (y = 0; y < DUNGEON_Y; y++ ) {
     for (x = 0; x < DUNGEON_X; x++ ) {
-      fread(&dungeon_phase1[x][y], 1, 1, file);
-      if(dungeon_phase1[x][y] == 0)
-      printf("# ");
-      else if(dungeon_phase1[x][y] == 225)
-      printf("B ");
+      fread(&dungeon_forcedMap[y][x], 1, 1, file);
+      if(dungeon_forcedMap[y][x] == 0)
+      {
+        //printf("#");
+        dungeonMap[y][x] = '#';
+      }
+      else if(dungeon_forcedMap[y][x] == 225)
+      {
+        dungeonMap[y][x] = 'B';
+        //printf("R");
+      }
       else
-      printf(" ");
+      {
+        //printf(" ");
+        dungeonMap[y][x] = ' ';
+      }
     //printf("%d ", field[y][x] );
+    //dungeonVals[y][x] = dungeon_forcedMap[y][x];
+    }
+    //printf("\n");
+  }
+
+  // Read bytes 1700-eof: Allocates the room to its positions
+  int numberOfRooms = (fileSize - 1700);
+  if(numberOfRooms%4 != 0){
+    printf("Error the room information!, exiting ...\n");
+    exit(1);
+  }
+  int roomInformation[numberOfRooms];
+  unsigned char buffer[4];
+  for(i=0; i<numberOfRooms; i++){
+    fread(buffer, sizeof(unsigned char), 1, file);
+    roomInformation[i] = buffer[0];
+  }
+
+  int room[4]; // Y pos, X pos, height, width
+  int j=0;
+  for(i=0; i<numberOfRooms/4; i++){
+    for(j=0; j<4; j++){
+      room[j] = roomInformation[j+(i*4)];
+    }
+    //printf("Ypos:%d Xpos:%d height:%d width:%d \n",room[0], room[1],room[2],room[3]);
+    for(y=0; y<room[2]; y++){
+      for(x=0; x<room[3]; x++){
+        dungeonMap[y+room[0]][x+room[1]] = '.';
+      }
+    }
+  }
+
+  for (y = 0; y < DUNGEON_Y; y++ ) {
+    for (x = 0; x < DUNGEON_X; x++ ) {
+      printf("%c",dungeonMap[y][x]);
     }
     printf("\n");
   }
-
-
-
-
 
   fclose(file);
 
@@ -785,7 +829,7 @@ void save_dungeon(){
 
 int main(int argc, char *argv[])
 {
-  //dungeon_t d;
+  dungeon_t d;
   struct timeval tv;
   uint32_t seed;
   char *saveSwitch = "--save";
@@ -800,26 +844,26 @@ int main(int argc, char *argv[])
     seed = (tv.tv_usec ^ (tv.tv_sec << 20)) & 0xffffffff;
   }
 
-  printf("Using seed: %u\n", seed);
-  srand(seed);
+
 
   if(argc > 1 && strcmp(argv[1],loadSwitch) == 0){
     load_dungeon(argv[2]);
-
+    printf("Done loading!\n");
   }
 
-  //printf("here1\n");
   if(argc > 1 && strcmp(argv[1],saveSwitch) == 0){
     save_dungeon();
+    printf("Done saving!\n");
   }
 
-  printf("Done loading/saving\n");
-  /*
-  init_dungeon(&d);
-  gen_dungeon(&d);
-  render_dungeon(&d);
-  delete_dungeon(&d);
-  */
+  if(argc < 0 ){
+    printf("Using seed: %u\n", seed);
+    srand(seed);
+    init_dungeon(&d);
+    gen_dungeon(&d);
+    render_dungeon(&d);
+    delete_dungeon(&d);
+  }
 
 
   return 0;
