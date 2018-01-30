@@ -694,7 +694,7 @@ char* concat(const char *s1, const char *s2)
     return result;
 }
 
-void load_dungeon(char *fileName){
+void load_dungeon(char *fileName, dungeon_t *dungeon){
   printf("Loading dungeon\n");
   printf("FileName: %s\n", fileName);
   char *filePath = concat(getenv("HOME"),"/.rlg327/");
@@ -837,27 +837,29 @@ int main(int argc, char *argv[])
 
   UNUSED(in_room);
 
-  if (argc == 2) {
-    seed = atoi(argv[1]);
-  } else {
-    gettimeofday(&tv, NULL);
-    seed = (tv.tv_usec ^ (tv.tv_sec << 20)) & 0xffffffff;
-  }
+  gettimeofday(&tv, NULL);
+  seed = (tv.tv_usec ^ (tv.tv_sec << 20)) & 0xffffffff;
 
 
 
-  if(argc > 1 && strcmp(argv[1],loadSwitch) == 0){
-    load_dungeon(argv[2]);
+
+  if(argc == 3 && strcmp(argv[1],loadSwitch) == 0){
+    load_dungeon(argv[2],&d);
     printf("Done loading!\n");
   }
 
-  if(argc > 1 && strcmp(argv[1],saveSwitch) == 0){
+  else if(argc == 2 && strcmp(argv[1],saveSwitch) == 0){
+    printf("Save Switch:\nUsing seed: %u\n", seed);
+    srand(seed);
+    init_dungeon(&d);
+    gen_dungeon(&d);
+    render_dungeon(&d);
     save_dungeon();
     printf("Done saving!\n");
   }
 
-  if(argc == 0 ){
-    printf("Using seed: %u\n", seed);
+  else {
+    printf("No valid arguments, so just generating a Random Dungeon.\nUsing seed: %u\n", seed);
     srand(seed);
     init_dungeon(&d);
     gen_dungeon(&d);
