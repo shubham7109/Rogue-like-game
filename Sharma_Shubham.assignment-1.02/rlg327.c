@@ -128,7 +128,7 @@ static void dijkstra_corridor(dungeon_t *d, pair_t from, pair_t to)
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       path[y][x].cost = INT_MAX;
@@ -227,7 +227,7 @@ static void dijkstra_corridor_inv(dungeon_t *d, pair_t from, pair_t to)
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       path[y][x].cost = INT_MAX;
@@ -684,11 +684,70 @@ void init_dungeon(dungeon_t *d)
   empty_dungeon(d);
 }
 
+// This method was inspired from a solution on satckOverflow :)
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1)+strlen(s2)+1);//+1 for the null-terminator
+    //in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
+
+void load_dungeon(char *fileName){
+  printf("Loading dungeon\n");
+  printf("FileName:%s\n", fileName);
+  char *filePath = concat(getenv("HOME"),"/.rlg327/");
+  filePath = concat(filePath,fileName);
+  // Test file name : 1521618087.rlg327
+  printf("%s\n",filePath);
+
+  FILE *file;
+  file = fopen(filePath, "r");
+
+  // Checks if the file exsits
+  if(file == NULL){
+    printf("Error opening file, exiting ...\n");
+    exit(1);
+  }
+
+
+  fseek (file, 0 , SEEK_END);
+  long lSize = ftell (file);
+  size_t result;
+  rewind (file);
+
+  // allocate memory to contain the whole file:
+  char * buffer;
+  buffer = (char*) malloc (sizeof(char)*lSize);
+  if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
+
+  // copy the file into the buffer:
+  result = fread (buffer,1,1,file);
+  if (result != lSize) {fputs ("Reading error",stderr); exit (3);}
+
+  /* the whole file is now loaded in the memory buffer. */
+  printf("%s\n",buffer);
+
+
+
+  fclose(file);
+
+}
+
+void save_dungeon(){
+  printf("Saving dungeon\n");
+}
+
+
+
 int main(int argc, char *argv[])
 {
   dungeon_t d;
   struct timeval tv;
   uint32_t seed;
+  char *saveSwitch = "--save";
+  char *loadSwitch = "--load";
 
   UNUSED(in_room);
 
@@ -702,10 +761,25 @@ int main(int argc, char *argv[])
   printf("Using seed: %u\n", seed);
   srand(seed);
 
+  if(argc > 1 && strcmp(argv[1],loadSwitch) == 0){
+    load_dungeon(argv[2]);
+
+  }
+
+  //printf("here1\n");
+  if(argc > 1 && strcmp(argv[1],saveSwitch) == 0){
+    save_dungeon();
+  }
+
+
+  //printf("here2\n");
+
   init_dungeon(&d);
   gen_dungeon(&d);
   render_dungeon(&d);
   delete_dungeon(&d);
+
+
 
   return 0;
 }
