@@ -703,7 +703,9 @@ void load_dungeon(char *fileName){
   printf("%s\n",filePath);
 
   FILE *file;
-  file = fopen(filePath, "r");
+  file = fopen(filePath, "rb");
+  free(filePath);
+
 
   // Checks if the file exsits
   if(file == NULL){
@@ -711,23 +713,63 @@ void load_dungeon(char *fileName){
     exit(1);
   }
 
+  char fileMarker[12];
+  int version;
+  int fileSize;
+  // This dungeon will be able to differentiate against
+  // rock and (room/corridor)
+  uint8_t dungeon_phase1[DUNGEON_X][DUNGEON_Y]; // [Dr. Sheaffer's note] Use unit8_t instead of unit32_t
 
-  fseek (file, 0 , SEEK_END);
-  long lSize = ftell (file);
-  size_t result;
-  rewind (file);
 
-  // allocate memory to contain the whole file:
-  char * buffer;
-  buffer = (char*) malloc (sizeof(char)*lSize);
-  if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
+  // Read byte 0-11: File type marker
+  fread(&fileMarker, 12, 1, file);
+  printf("fileMarker:%s\n", fileMarker);
+  if (strcmp(fileMarker,"RLG327-S2018") != 0){
+    printf("Incorrect file type marker, exiting ...\n");
+    exit(1);
+  }
 
-  // copy the file into the buffer:
-  result = fread (buffer,1,1,file);
-  if (result != lSize) {fputs ("Reading error",stderr); exit (3);}
+  // Read byte 12-15: Version marker with value 0
+  fread(&version , 4, 1, file);
+  printf("version:%d\n", version );
+  if(version != 0){
+    printf("Incorrect file version marker, exiting ...\n");
+    exit(1);
+  }
 
-  /* the whole file is now loaded in the memory buffer. */
-  printf("%s\n",buffer);
+  // Read byte 16-19: File size uns32bit
+  fread(&fileSize , 4, 1, file);
+
+  // convert the byte encoding of integer values
+  // from the byte order that the current CPU (the "host") uses, to
+  // and from little-endian and big-endian byte order.
+  // https://linux.die.net/man/3/be32toh
+
+  fileSize = (int) be32toh(fileSize);
+  printf("fileSize:%d\n", fileSize );
+  if(fileSize <= 0){
+    printf("Error with file size, exiting ...\n");
+    exit(1);
+  }
+
+
+
+  int x,y;
+  for (y = 0; y < DUNGEON_Y; y++ ) {
+    for (x = 0; x < DUNGEON_X; x++ ) {
+      fread(&dungeon_phase1[x][y], 1, 1, file);
+      if(dungeon_phase1[x][y] == 0)
+      printf("# ");
+      else if(dungeon_phase1[x][y] == 225)
+      printf("B ");
+      else
+      printf(" ");
+    //printf("%d ", field[y][x] );
+    }
+    printf("\n");
+  }
+
+
 
 
 
@@ -743,7 +785,7 @@ void save_dungeon(){
 
 int main(int argc, char *argv[])
 {
-  dungeon_t d;
+  //dungeon_t d;
   struct timeval tv;
   uint32_t seed;
   char *saveSwitch = "--save";
@@ -771,14 +813,13 @@ int main(int argc, char *argv[])
     save_dungeon();
   }
 
-
-  //printf("here2\n");
-
+  printf("Done loading/saving\n");
+  /*
   init_dungeon(&d);
   gen_dungeon(&d);
   render_dungeon(&d);
   delete_dungeon(&d);
-
+  */
 
 
   return 0;
