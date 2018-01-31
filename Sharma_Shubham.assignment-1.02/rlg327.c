@@ -716,10 +716,10 @@ void load_dungeon(char *fileName, dungeon_t *dungeon){
   char fileMarker[12];
   int version;
   int fileSize;
-  int i;
+  int i,j;
   // This dungeon will be able to differentiate against
   // rock and (room/corridor)
-  uint8_t dungeon_forcedMap[DUNGEON_Y][DUNGEON_X]; // [Dr. Sheaffer's note] Use unit8_t instead of unit32_t
+  int dungeon_forcedMap[DUNGEON_Y][DUNGEON_X]; // [Dr. Sheaffer's note] Use unit8_t instead of unit32_t
   char dungeonMap[DUNGEON_Y][DUNGEON_X];
 
   // Read byte 0-11: File type marker
@@ -766,17 +766,24 @@ void load_dungeon(char *fileName, dungeon_t *dungeon){
       {
         //printf("#");
         dungeonMap[y][x] = '#';
+        dungeon->hardness[y][x] =  dungeon_forcedMap[x][y];
+        dungeon->map[y][x] = ter_wall;
       }
       else if(dungeon_forcedMap[y][x] == 225)
       {
-        dungeonMap[y][x] = 'B';
         //printf("R");
+        dungeonMap[y][x] = 'B';
+        dungeon->hardness[y][x] = dungeon_forcedMap[x][y];
+        dungeon->map[y][x] = ter_wall_immutable;
       }
       else
       {
         //printf(" ");
         dungeonMap[y][x] = ' ';
+        dungeon->hardness[y][x] = dungeon_forcedMap[x][y];
+        dungeon->map[y][x] = ter_floor;
       }
+
     //printf("%d ", field[y][x] );
     //dungeonVals[y][x] = dungeon_forcedMap[y][x];
     }
@@ -789,23 +796,31 @@ void load_dungeon(char *fileName, dungeon_t *dungeon){
     printf("Error the room information!, exiting ...\n");
     exit(1);
   }
-  int roomInformation[numberOfRooms];
-  unsigned char buffer[4];
+
+  dungeon->num_rooms = numberOfRooms;
+  int16_t rooms[numberOfRooms][4];
+
   for(i=0; i<numberOfRooms; i++){
-    fread(buffer, sizeof(unsigned char), 1, file);
-    roomInformation[i] = buffer[0];
+    for(j=0; j<4; j++){
+      fread(&rooms[i][j],1,1,file);
+    }
   }
 
-  int room[4]; // Y pos, X pos, height, width
-  int j=0;
-  for(i=0; i<numberOfRooms/4; i++){
-    for(j=0; j<4; j++){
-      room[j] = roomInformation[j+(i*4)];
-    }
+  for(i=0; i<numberOfRooms; i++){
+     dungeon->rooms[i].position[dim_y]= rooms[i][0];
+     dungeon->rooms[i].position[dim_x]= rooms[i][1];
+     dungeon->rooms[i].size[dim_y] = rooms[i][2];
+     dungeon->rooms[i].size[dim_x] = rooms[i][3];
+  }
+
     //printf("Ypos:%d Xpos:%d height:%d width:%d \n",room[0], room[1],room[2],room[3]);
-    for(y=0; y<room[2]; y++){
-      for(x=0; x<room[3]; x++){
-        dungeonMap[y+room[0]][x+room[1]] = '.';
+
+  for(i=0; i<numberOfRooms; i++){
+    int xpos = rooms[i][1];
+    int ypos = rooms[i][0];
+    for(y=0; y<rooms[i][2]; y++){
+      for(x=0; x<rooms[i][3]; x++){
+        dungeonMap[y+ypos][x+xpos] = '.';
       }
     }
   }
@@ -826,6 +841,7 @@ void save_dungeon(dungeon_t *dungeon){
   char *fileName = "dungeon.rlg327";
   char *filePath = concat(getenv("HOME"),"/.rlg327/");
   filePath = concat(filePath,fileName);
+
   // Test file name : 1521618087.rlg327
   printf("filePath: %s\n",filePath);
 
@@ -844,12 +860,12 @@ void save_dungeon(dungeon_t *dungeon){
   fwrite(&fileMarker, 12, 1, file);
 
 
-  // Read byte 12-15: Version marker with value 0
+  // Bytes 12-15: Version marker with value 0
   int version =0;
   fwrite(&version , 4, 1, file);
 
 
-  // Read byte 16-19: File size uns32bit
+  // Bytes 16-19: File size uns32bit
   // 20 accounts for the fileMarker and version marker
   int fileSize = (4 * dungeon->num_rooms)+(DUNGEON_X*DUNGEON_Y)+(20);
   printf("fileSize: %d\n", fileSize);
@@ -860,9 +876,31 @@ void save_dungeon(dungeon_t *dungeon){
   fileSize = htobe32(fileSize);
   fwrite(&fileSize , 4, 1, file);
 
-  // Read byte 20–1699: Read hardness of the cell
+  // Bytes 20–1699: Read hardness of the cell
+  int x,y;
+  for (y = 0; y < DUNGEON_Y; y++) {
+    for (x = 0; x < DUNGEON_X; x++) {
+      fwrite(&dungeon->hardness[y][x], 1, 1, file); // Saves one dungeon byte at a time
+    }
+  }
 
+  // Bytes 1700-eof: Allocates the rooms and its positions
+  int numberOfRooms = dungeon->num_rooms;
+  int16_t rooms[numberOfRooms][4];
+  int i,j;
+  for(i=0; i<numberOfRooms; i++){
+    rooms[i][0] = dungeon->rooms[i].position[dim_y];
+    rooms[i][1] = dungeon->rooms[i].position[dim_x];
+    rooms[i][2] = dungeon->rooms[i].size[dim_y];
+    rooms[i][3] = dungeon->rooms[i].size[dim_x];
+  }
+  for(i=0; i<numberOfRooms; i++){
+    for(j=0; j<4; j++){
+      fwrite(&rooms[i][j],1,1,file);
+    }
+  }
 
+fclose(file); //Closes the file
 
 }
 
@@ -880,9 +918,6 @@ int main(int argc, char *argv[])
 
   gettimeofday(&tv, NULL);
   seed = (tv.tv_usec ^ (tv.tv_sec << 20)) & 0xffffffff;
-
-
-
 
   if(argc == 3 && strcmp(argv[1],loadSwitch) == 0){
     load_dungeon(argv[2],&d);
