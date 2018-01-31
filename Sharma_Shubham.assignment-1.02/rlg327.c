@@ -774,7 +774,7 @@ void load_dungeon(char *fileName, dungeon_t *dungeon){
         //printf("B"); // border
         dungeonMap[y][x] = ' ';
         dungeon->hardness[y][x] = dungeon_forcedMap[x][y];
-        dungeon->map[y][x] = ter_wall_immutable;
+        dungeon->map[y][x] = ter_wall;
       }
       else
       {
@@ -945,7 +945,12 @@ int main(int argc, char *argv[])
     save_dungeon(&d);
     printf("Done saving!\n");
   }
-
+  else if(argc == 4 && (strcmp(argv[1],loadSwitch) == 0) && (strcmp(argv[3],saveSwitch) == 0)){
+    load_dungeon(argv[2],&d);
+    printf("Done loading!\n");
+    save_dungeon(&d);
+    printf("Done saving!\n");
+  }
   else {
     printf("No valid arguments, so just generating a Random Dungeon.\nUsing seed: %u\n", seed);
     srand(seed);
