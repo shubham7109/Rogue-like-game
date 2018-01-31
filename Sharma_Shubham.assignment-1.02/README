@@ -1,0 +1,37 @@
+COMS327-Assignment 1.012: Load and Save dungeon
+
+To execute the code, run the following commands: [NOTE: 'HOME' refers to the users home directory's name]
+
+1)To only generate a new dungeon
+
+make
+./rlg327
+
+2)To load a file from 'HOME'/.rlg327/
+
+make
+./rlg327 --load filename.extension
+
+3)To save a randomly generated file to 'HOME'/.rlg327
+
+make
+./rlg327 --save
+
+4)To load a file and save it again
+
+make
+./rlg327 --load filename.extension --save
+
+
+This project was completed in C, using multiple user defined functions. It is designed to generate, load and save new forms of dungeons.
+
+******** HERE ARE SOME GUIDING POINTS FOR THE GRADER *************
+1. The program requires a '.rlg327' directory already in the home folder.
+
+2. Whenever the --save switch is called, the dungeon is saved in the name "dungeon.rlg327" in the "HOME/.rlg327/" directory
+
+3. Additional information is provided such as file size, file path, version number e.t.c. when using --load and --saved
+
+4. Loading a file and saving it over and over again breaks the code, which is the only known bug in the program. Besides that, everything else should work great !
+
+Please contact: shubham@iastate.edu, if there is any issue with the program besides the README.
