@@ -82,7 +82,7 @@ void Graph::addEdge(37,768
 void Graph::shortestPath(44,949
 int main(100,2852
 
-rlg327.c,2626
+rlg327.c,2675
 #define DUMP_HARDNESS_IMAGES 16,258
 # define rand_under(20,403
 # define rand_range(24,546
@@ -169,5 +169,6 @@ int read_dungeon(920,26662
 int read_pgm(995,28476
 void usage(1080,30879
 int pickAnumber(1091,31164
-void path_finding(1107,31458
-int main(1153,32413
+static void find_path_using_dijkstra(1106,31457
+void path_finding(1202,34993
+int main(1265,36337

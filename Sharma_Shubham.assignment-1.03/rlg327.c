@@ -1214,12 +1214,16 @@ void path_finding(dungeon_t *d)
 	while(d->map[yCor][xCor] != ter_floor_room && d->map[yCor][xCor] != ter_floor_hall){
 		xCor = pickAnumber(0,DUNGEON_X-1);
 		yCor = pickAnumber(0,DUNGEON_Y-1);
+		to[dim_y] = yCor;
+		to[dim_x] = xCor;
 	}
 		
-	for (p[dim_y] = 0; p[dim_y] < DUNGEON_Y; p[dim_y]++) {
-		for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++) {
-		
-			find_path_using_dijkstra(&d, )
+	for (from[dim_y] = 0; from[dim_y] < DUNGEON_Y; from[dim_y]++) {
+		for (from[dim_x] = 0; from[dim_x] < DUNGEON_X; from[dim_x]++) {
+			if(d->map[from[dim_y]][from[dim_x]] == ter_floor_room || d->map[from[dim_y]][from[dim_x]] == ter_floor_hall)
+			{
+				find_path_using_dijkstra(d,from,to);
+			}
 		
 		}
 	}
@@ -1230,7 +1234,7 @@ void path_finding(dungeon_t *d)
 	for (p[dim_y] = 0; p[dim_y] < DUNGEON_Y; p[dim_y]++) {
 		for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++) {
 			
-			if(p[dim_x] == xCor && p[dim_y] == yCor) // Place the PC
+			if(p[dim_x] == to[dim_x] && p[dim_y] == to[dim_y]) // Place the PC
 				putchar('@');
 			else
 			{
