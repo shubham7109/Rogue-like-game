@@ -1103,9 +1103,9 @@ int pickAnumber(int min, int max){
     return min + (r / buckets);
 }
 
-static void find_path_using_dijkstra(dungeon_t *d, pair_t from, pair_t to)
+static void find_tunnel_path_using_dijkstra(dungeon_t *d, pair_t from, pair_t to) // TODO returns int value
 {
-  static corridor_path_t path[DUNGEON_Y][DUNGEON_X], *p;
+  static corridor_path_t path[DUNGEON_Y][DUNGEON_X], *p; //TODO
   static uint32_t initialized = 0;
   heap_t h;
   uint32_t x, y;
@@ -1128,7 +1128,7 @@ static void find_path_using_dijkstra(dungeon_t *d, pair_t from, pair_t to)
 
   path[from[dim_y]][from[dim_x]].cost = 0;
 
-  heap_init(&h, corridor_path_cmp, NULL);
+  heap_init(&h, corridor_path_cmp, NULL); //TODO
 
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
@@ -1147,24 +1147,36 @@ static void find_path_using_dijkstra(dungeon_t *d, pair_t from, pair_t to)
       for (x = to[dim_x], y = to[dim_y];
            (x != from[dim_x]) || (y != from[dim_y]);
            p = &path[y][x], x = p->from[dim_x], y = p->from[dim_y]) {
-        if (mapxy(x, y) != ter_floor_room) {
+        if (mapxy(x, y) != ter_floor_room) { //TODO this if statement
           mapxy(x, y) = ter_floor_hall;
           hardnessxy(x, y) = 0;
         }
       }
       heap_delete(&h);
-      return;
+      return; // TODO returns the cost
     }
+    /* TODO this should be here, figure out what this is.
+      int hard = hardnesspair(p->pos);
+    int weight;
+    if((hard >= 1 && hard <=84) || hard == 0) {
+      weight = 1;
+    }
+    else if( hard >= 85 && hard <=170) {
+      weight = 2;
+    }
+    else if( hard >= 171 && hard <=254) {
+      weight = 3;
+    }
+	else weight = INT_MAX;
+*/
 
-    if ((path[p->pos[dim_y] - 1][p->pos[dim_x]    ].hn) &&
+    if ((path[p->pos[dim_y] - 1][p->pos[dim_x]    ].hn) && //TODO all if statements
         (path[p->pos[dim_y] - 1][p->pos[dim_x]    ].cost >
-         p->cost + hardnesspair(p->pos))) {
-      path[p->pos[dim_y] - 1][p->pos[dim_x]    ].cost =
-        p->cost + hardnesspair(p->pos);
+         p->cost + hardnesspair(p->pos))) { 
+      path[p->pos[dim_y] - 1][p->pos[dim_x]    ].cost = p->cost + hardnesspair(p->pos); //TODO p->cost + weight;
       path[p->pos[dim_y] - 1][p->pos[dim_x]    ].from[dim_y] = p->pos[dim_y];
       path[p->pos[dim_y] - 1][p->pos[dim_x]    ].from[dim_x] = p->pos[dim_x];
-      heap_decrease_key_no_replace(&h, path[p->pos[dim_y] - 1]
-                                           [p->pos[dim_x]    ].hn);
+      heap_decrease_key_no_replace(&h, path[p->pos[dim_y] - 1][p->pos[dim_x]    ].hn);
     }
     if ((path[p->pos[dim_y]    ][p->pos[dim_x] - 1].hn) &&
         (path[p->pos[dim_y]    ][p->pos[dim_x] - 1].cost >
@@ -1222,7 +1234,7 @@ void path_finding(dungeon_t *d)
 		for (from[dim_x] = 0; from[dim_x] < DUNGEON_X; from[dim_x]++) {
 			if(d->map[from[dim_y]][from[dim_x]] == ter_floor_room || d->map[from[dim_y]][from[dim_x]] == ter_floor_hall)
 			{
-				find_path_using_dijkstra(d,from,to);
+				find_tunnel_path_using_dijkstra(d,from,to);
 			}
 		
 		}
