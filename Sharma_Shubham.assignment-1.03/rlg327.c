@@ -1211,6 +1211,9 @@ static void find_tunnel_path_using_dijkstra(dungeon_t *d, pair_t from, pair_t to
   }
 }
 
+static void find_non_tunnel_path_using_dijkstra(dungeon_t *d, pair_t from, pair_t to){
+
+}
 void path_finding(dungeon_t *d)
 {
 	printf("PathFinding\n");
@@ -1239,6 +1242,18 @@ void path_finding(dungeon_t *d)
 		
 		}
 	}
+	
+	for (from[dim_y] = 0; from[dim_y] < DUNGEON_Y; from[dim_y]++) {
+		for (from[dim_x] = 0; from[dim_x] < DUNGEON_X; from[dim_x]++) {
+			if(d->map[from[dim_y]][from[dim_x]] == ter_floor_room || d->map[from[dim_y]][from[dim_x]] == ter_floor_hall)
+			{
+				find_non_tunnel_path_using_dijkstra(d,from,to);
+			}
+		
+		}
+	}
+	
+	
 	
 	
 	//printf("Picked:(%d,%d)\n",xCor,yCor);
