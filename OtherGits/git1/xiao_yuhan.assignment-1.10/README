@@ -1,0 +1,49 @@
+README
+Author: Yuhan Xiao
+Date: April 19, 2017
+
+included:
+Same with Assignment-1.09
+this README
+Makefile
+CHANGELOG
+
+Project Description: Choose Your Own Assignment
+Note:
+* At the beginning of the game, asks for player's name and shows welcome.
+* In game, shows PC's rank, EXP/EXP needed to rank up, HP and speed at the information line(bottom).
+
+* New terrain_type_t:
+* called portal, shown as '$'.
+* When standing on a portal and enter '$', moves PC to a random portal position.
+
+* New combat mode:
+* When PC meet a monster, enters the new combat mode.
+* Shows Monster's information at top right and PC's information at bottom left.
+* Shows wild (monster's name) appeared! (Pretty much like Pokemon red...)
+* Player can choose fight the monster or run away.
+* When running away, if PC's rank is lower than monster's rank, PC will be hit by the monster once.
+* If PC choose to fight, he can still run away in the fighting process.
+* It's pretty much a Pokemon like combat mode.
+* Important: When entering 2 or 3 in the combat mode, you need to enter them twice to make it work.(bug when jumping over the information)
+
+* Rank and EXP:
+* Monsters' hp and damage are depending on base hp, damage and their ranks(Higher rank, higher hp and damage).
+* PC will gain EXP after kills a monster(higher rank of the monster, higher EXP).
+* PC will rank up when EXP gets to an enough point(100 * current_rank^2).
+* When PC rank up, renew his hp, damage and speed(becoming higher).
+
+* Other:
+* There is a choice: using skills in combat mode. The skills part is not done yet, so it will just work as a normal attack.
+* When the monster's speed is too much faster than PC,
+  there is a situation that after PC run away once,
+  the monster will catch him again and a new combat will start.
+
+Relevant Functions:
+io.cpp & io.h: io_start, io_welcome, io_combat
+move.cpp & move.h: do_combat, move_character
+dungeon.cpp: place_portals, delete_dungeon, gen_dungeon
+
+Relevant Structure
+Added portals and num_portals in dungeon.
+Added rank and EXP in character

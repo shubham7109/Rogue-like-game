@@ -1,0 +1,14 @@
+CHANGELOG
+Author: Yuhan Xiao
+
+Day One   (Feb 20, 2017): Started reading the description of this assignment.
+Day One   (Feb 20, 2017): Started reading Jeremy's code for Assignment-1.03.
+Day One   (Feb 20, 2017): Started Project and I used Jeremy's code.
+
+Day Two   (Feb 21, 2017): Added Usage --nummon to add monsters with input number.
+Day Two   (Feb 21, 2017): Created function excute() to play the game.
+Day Two   (Feb 21, 2017): Done PC move.
+
+Day Three (Feb 22, 2017): Done monsters move.
+Day Three (Feb 22, 2017): Debugging.
+Day Three (Feb 22, 2017): Finished README and CHANGELOG (makefile has already been made by Jeremy
