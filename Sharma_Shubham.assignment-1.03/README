@@ -23,4 +23,4 @@ make
 ./rlg327 --load filename.extension --save
 
 
-This project was completed in C, using multiple user defined functions.
+This project was completed in C, using multiple user defined functions. It uses Dijkstra's algorithm to perform tunneling and non tunneling path searches.

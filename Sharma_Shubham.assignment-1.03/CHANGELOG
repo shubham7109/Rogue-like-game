@@ -1,10 +1,10 @@
-01/29/18: Started the assignment with a basic understanding in mind
-01/29/18: Getting familiar with the debugging process
-01/29/18: Started load file
-01/29/18: Made some more progress in the load function
-01/29/18: Added test files into rep
-01/29/18: load function seems to be working!
-01/30/18: Starting save function
-01/30/18: cleaning up load method
-01/30/18: Both load and save seem to work! :')
-01/30/18: Finalized the project by adding comments
+02/5/18: Started the assignment with a basic understanding in mind
+02/5/18: Getting familiar with the debugging process
+02/5/18: Writing code to spawn PC
+02/5/18: Made some more progress to randomly spawn PC
+02/6/18: PC spawn is works and tested !
+02/6/18: Starting tunneling algorithm
+02/6/18: Using professors Dijkstra's corridor function to implement path searches
+02/13/18: Cleaning up project
+02/13/18: Testing project from the assignment specs
+02/13/18: Finalized the project by adding comments
