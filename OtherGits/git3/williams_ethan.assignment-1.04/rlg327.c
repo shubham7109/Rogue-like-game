@@ -35,10 +35,10 @@ typedef enum dim {
 
 typedef int16_t pair_t[num_dims];
 
-#define DUNGEON_X              160
-#define DUNGEON_Y              105
-#define MIN_ROOMS              25
-#define MAX_ROOMS              40
+#define DUNGEON_X              80
+#define DUNGEON_Y              21
+#define MIN_ROOMS              5
+#define MAX_ROOMS              10
 #define ROOM_MIN_X             7
 #define ROOM_MIN_Y             5
 #define ROOM_MAX_X             20
@@ -47,7 +47,7 @@ typedef int16_t pair_t[num_dims];
 #define DUNGEON_SAVE_FILE      "dungeon"
 #define DUNGEON_SAVE_SEMANTIC  "RLG327-S2017"
 #define DUNGEON_SAVE_VERSION   0U
-  
+
 #define mappair(pair) (d->map[pair[dim_y]][pair[dim_x]])
 #define mapxy(x, y) (d->map[y][x])
 #define hardnesspair(pair) (d->hardness[pair[dim_y]][pair[dim_x]])
@@ -106,7 +106,7 @@ typedef struct dungeon {
    * of overhead to the memory system.                                    */
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
   tunnel_t tunneling[DUNGEON_Y][DUNGEON_X];
-  non_tunnel_t non_tunneling[DUNGEON_Y][DUNGEON_X];  
+  non_tunnel_t non_tunneling[DUNGEON_Y][DUNGEON_X];
   monster_t monster[DUNGEON_Y][DUNGEON_X];
 } dungeon_t;
 
@@ -166,7 +166,7 @@ static void dijkstra_corridor(dungeon_t *d, pair_t from, pair_t to)
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       path[y][x].cost = INT_MAX;
@@ -265,7 +265,7 @@ static void dijkstra_corridor_inv(dungeon_t *d, pair_t from, pair_t to)
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       path[y][x].cost = INT_MAX;
@@ -1160,7 +1160,7 @@ void non_tunneling(dungeon_t *dungeon, int playerY, int playerX){
   static uint32_t initialized = 0;
   heap_t heap;
   int y, x;
-  
+
   if (!initialized) {
     for (y = 0; y < DUNGEON_Y; y++) {
       for (x = 0; x < DUNGEON_X; x++) {
@@ -1170,7 +1170,7 @@ void non_tunneling(dungeon_t *dungeon, int playerY, int playerX){
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       dungeon->non_tunneling[y][x].cost = INT_MAX;
@@ -1274,7 +1274,7 @@ void non_tunneling(dungeon_t *dungeon, int playerY, int playerX){
       heap_decrease_key_no_replace(&heap, dungeon->non_tunneling[p->pos[dim_y]    ]
                                            [p->pos[dim_x] - 1].hn);
     }
-  }  
+  }
 }
 
 static int32_t tunnel_cmp(const void *key, const void *with) {
@@ -1297,7 +1297,7 @@ void tunneling(dungeon_t *dungeon, int playerY, int playerX){
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       dungeon->tunneling[y][x].cost = INT_MAX;
@@ -1320,7 +1320,7 @@ void tunneling(dungeon_t *dungeon, int playerY, int playerX){
 
   while ((p = heap_remove_min(&h))) {
     p->hn = NULL;
-    
+
     int cost = 0;
     if(dungeon->hardness[y][x] >= 0 && dungeon->hardness[y][x] <= 84){
       cost = 1;
@@ -1502,7 +1502,7 @@ void generate_monsters(dungeon_t *dungeon, int numMonsters, char type){
       dungeon->monster[y][x].lastKnown[0] = 0;
       dungeon->monster[y][x].lastKnown[1] = 0;
     }
-    
+
     dungeon->monster[y][x].pos[0] = y;
     dungeon->monster[y][x].pos[1] = x;
     dungeon->monster[y][x].turn = 0;
@@ -1586,7 +1586,7 @@ void findShortest(dungeon_t *dungeon, monster_t *monster, int playerY, int playe
 void generate_move(dungeon_t *dungeon, heap_t *heap, monster_t *monster, int playerY, int playerX){
   int erratic = rand() % 2;
   int sameRoom = in_same_room(dungeon, monster->pos[0], monster->pos[1], playerY, playerX);
-    
+
   if(monster->type == '@'){
     //PC moves randomly
     int ny = rand_range(-1, 1);
@@ -1786,8 +1786,8 @@ void generate_move(dungeon_t *dungeon, heap_t *heap, monster_t *monster, int pla
     else
       findShortest(dungeon, monster, playerY, playerX, 1);
   }
-  
-  
+
+
   if((monster->type == '@' || monster->type == '0' || monster->type == '1' || monster->type == '4' || monster->type =='5' || monster->type == '8' || monster->type == '9' || monster->type == 'c' || monster->type == 'd') &&
      dungeon->hardness[monster->next_pos[0]][monster->next_pos[1]] != 0){
     monster->next_pos[0] = monster->pos[0];
@@ -1795,13 +1795,13 @@ void generate_move(dungeon_t *dungeon, heap_t *heap, monster_t *monster, int pla
     monster->turn = monster->turn + 1000 / monster->speed;
     monster->hn = heap_insert(heap, monster);
   }
-  
+
   else{
     //printf("type: %c turn: %d cur y: %d cur x: %d in room?: %d\n", monster->type, monster->turn, monster->pos[0], monster->pos[1], sameRoom);
     monster->turn = monster->turn + 1000 / monster->speed;
     monster->hn = heap_insert(heap, monster);
   }
-  
+
 }
 
 static int32_t move_cmp(const void *key, const void *with) {
@@ -1840,7 +1840,7 @@ int main(int argc, char *argv[])
    * And the final switch, '--image', allows me to create a dungeon *
    * from a PGM image, so that I was able to create those more      *
    * interesting test dungeons for you.                             */
- 
+
  if (argc > 1) {
     for (i = 1, long_arg = 0; i < argc; i++, long_arg = 0) {
       if (argv[i][0] == '-') { /* All switches start with a dash */
@@ -1940,14 +1940,14 @@ int main(int argc, char *argv[])
     }
 
     non_tunneling(&d, playerY, playerX);
-  
+
     tunneling(&d, playerY, playerX);
 
     render_dungeon(&d);
 
     heap_t heap;
     heap_init(&heap, move_cmp, NULL);
-  
+
     int j, k;
     for(j = 0; j < 105; j++){
       for(k = 0; k < 160; k++){
@@ -1959,7 +1959,7 @@ int main(int argc, char *argv[])
     }
 
     monster_t *move;
-      
+
     int playing = 1;
     while(playing && (move = heap_remove_min(&heap))){
 
@@ -2020,7 +2020,7 @@ int main(int argc, char *argv[])
 	  d.monster[y][x] = *move;
 	  d.monster[y][x].hn = NULL;
 	}
-       	
+
       }
       //If monster moves to next space with no collision and no tunneling
       else{
@@ -2028,19 +2028,19 @@ int main(int argc, char *argv[])
  	  d.monster[move->next_pos[0]][move->next_pos[1]].pos[0] = move->next_pos[0];
  	  d.monster[move->next_pos[0]][move->next_pos[1]].pos[1] = move->next_pos[1];
  	  d.monster[move->next_pos[0]][move->next_pos[1]].hn = NULL;
-	  
+
 	  //If the monster moves out of its current space reset the space to have no monster
 	  if(move->pos[0] != move->next_pos[0] || move->pos[1] != move->next_pos[1])
 	    d.monster[move->pos[0]][move->pos[1]].type = 'z';
       }
-    
+
       //If player moves, recalculate distances and re-render dungeon
       if(d.monster[ny][nx].type == '@'){
 	playerY = ny;
 	playerX = nx;
-	
+
 	non_tunneling(&d, playerY, playerX);
-  
+
 	tunneling(&d, playerY, playerX);
 
 	render_dungeon(&d);
@@ -2052,12 +2052,12 @@ int main(int argc, char *argv[])
   }
   else{
       non_tunneling(&d, playerY, playerX);
-  
+
       tunneling(&d, playerY, playerX);
 
       render_dungeon(&d);
   }
-  
+
   if (do_save) {
     write_dungeon(&d, save_file);
   }

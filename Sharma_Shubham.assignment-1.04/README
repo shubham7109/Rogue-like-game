@@ -1,0 +1,26 @@
+COMS327-Assignment 1.04: Player Character and Monsters
+
+To execute the code, run the following commands: [NOTE: 'HOME' refers to the users home directory's name]
+
+1)To only generate a new dungeon
+
+make
+./rlg327
+
+2)To load a file from 'HOME'/.rlg327/
+
+make
+./rlg327 --load filename.extension
+
+3)To save a randomly generated file to 'HOME'/.rlg327
+
+make
+./rlg327 --save
+
+4)To load a file and save it again
+
+make
+./rlg327 --load filename.extension --save
+
+
+This project was completed in C, using multiple user defined functions. It uses Dijkstra's algorithm to perform tunneling and non tunneling path searches.
