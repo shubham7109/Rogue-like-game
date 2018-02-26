@@ -71,7 +71,7 @@ static void dijkstra_corridor(dungeon_t *d, pair_t from, pair_t to)
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       path[y][x].cost = INT_MAX;
@@ -170,7 +170,7 @@ static void dijkstra_corridor_inv(dungeon_t *d, pair_t from, pair_t to)
     }
     initialized = 1;
   }
-  
+
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       path[y][x].cost = INT_MAX;
@@ -803,7 +803,7 @@ int read_rooms(dungeon_t *d, FILE *f)
 
       exit(-1);
     }
-        
+
 
     /* After reading each room, we need to reconstruct them in the dungeon. */
     for (y = d->rooms[i].position[dim_y];

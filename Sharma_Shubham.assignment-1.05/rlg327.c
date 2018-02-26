@@ -2,7 +2,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
-
+#include <ncurses.h>
 /* Very slow seed: 686846853 */
 
 #include "dungeon.h"
@@ -42,7 +42,7 @@ const char *victory =
   "                                   You win!\n\n";
 
 const char *tombstone =
-  "\n\n\n\n                /\"\"\"\"\"/\"\"\"\"\"\"\".\n"
+  "\n\n                /\"\"\"\"\"/\"\"\"\"\"\"\".\n"
   "               /     /         \\             __\n"
   "              /     /           \\            ||\n"
   "             /____ /   Rest in   \\           ||\n"
@@ -62,6 +62,8 @@ const char *tombstone =
   "..\"\"\"\"\"....\"\"\"\"\"..\"\"...\"\"\".\n\n"
   "            You're dead.  Better luck in the next life.\n\n\n";
 
+  bool quit = false;
+
 void usage(char *name)
 {
   fprintf(stderr,
@@ -75,79 +77,107 @@ void usage(char *name)
 
 void movePC(dungeon_t *d){
 
-  int keyPress;
-  while(1){
+  mvprintw(0,0,"In movePC");
+  int keyPress=getch();
+  bool onPress = false;
+  while(!onPress){
     keyPress = getch();
+    mvprintw(0,0,"KEY PRESS: %d",keyPress );
     switch (keyPress) {
       case 7:
       case 121:
       // Move upper left
-      printf("Move Upper left\n");
+      mvprintw(0,0,"Move Upper left");
+      onPress = true;
+      break;
 
       case 56:
       case 107:
       // Move up
-      printf("Move Up\n");
+      mvprintw(0,0,"Move Up");
+      onPress = true;
+      break;
 
       case 57:
       case 117:
       // Move upper right
-      printf("Move Upper right\n");
+      mvprintw(0,0,"Move Upper right");
+      onPress = true;
+      break;
 
       case 54:
       case 108:
-      // Move up
-      printf("Move Up\n");
-
-      case 56:
-      case 107:
       // Move right
-      printf("Move right\n");
+      mvprintw(0,0,"Move right");
+      onPress = true;
+      break;
 
       case 51:
       case 110:
       // Move lower right
-      printf("Move lower right\n");
+      mvprintw(0,0,"Move lower right");
+      onPress = true;
+      break;
 
       case 50:
       case 106:
       // Move down
-      printf("Move down\n");
+      mvprintw(0,0,"Move down");
+      onPress = true;
+      break;
 
       case 49:
       case 98:
       // Move lower left
-      printf("Move lower left\n");
+      mvprintw(0,0,"Move lower left");
+      onPress = true;
+      break;
 
       case 52:
       case 104:
       // Move left
-      printf("Move left\n");
+      mvprintw(0,0,"Move left");
+      onPress = true;
+      break;
 
       case 62:
       // Move downstairs
-      printf("Move downstairs\n");
+      mvprintw(0,0,"Move downstairs");
+      onPress = true;
+      break;
 
-      case 60
+      case 60:
       // Move upstairs
-      printf("Move upstairs\n");
+      mvprintw(0,0,"Move upstairs");
+      onPress = true;
+      break;
 
       case 32:
       case 53:
       // Do nothing
-      printf("Do nothing\n");
+      mvprintw(0,0,"Do nothing");
+      onPress = true;
+      break;
 
       case 109:
       // Display a list of Monsters
-      printf("Display a list of monsters\n");
+      mvprintw(0,0,"Display a list of monsters");
+      onPress = true;
+      break;
 
       case 27:
       // Escape
-      printf("Escape\n");
+      mvprintw(0,0,"Escape");
+      onPress = true;
+      break;
 
       case 113:
       // Quit the Game
-      printf("Quit the game\n");
+      quit = true;
+      mvprintw(0,0,"Quit the game");
+      return; // Exits the loop
+      break;
+
     }
   }
 }
@@ -174,6 +204,15 @@ int main(int argc, char *argv[])
   do_seed = 1;
   save_file = load_file = NULL;
   d.max_monsters = MAX_MONSTERS;
+
+
+  // Sets up the ncurses lib before initialization
+  initscr();
+  raw();
+  noecho();
+  keypad(stdscr, TRUE);
+  curs_set(0);
+
 
   /* The project spec requires '--load' and '--save'.  It's common  *
    * to have short and long forms of most switches (assuming you    *
@@ -297,6 +336,8 @@ int main(int argc, char *argv[])
   }
   srand(seed);
 
+
+
   init_dungeon(&d);
 
   if (do_load) {
@@ -310,12 +351,16 @@ int main(int argc, char *argv[])
   config_pc(&d);
   gen_monsters(&d);
 
-  while (pc_is_alive(&d) && dungeon_has_npcs(&d)) {
+  while (pc_is_alive(&d) && dungeon_has_npcs(&d) && !quit) {
     render_dungeon(&d);
     do_moves(&d);
-    usleep(33000);
+    movePC(&d);
+    clear();
   }
 
+  // Ends and clears the dungeon
+  clear();
+  endwin();
   render_dungeon(&d);
 
   if (do_save) {
@@ -342,14 +387,24 @@ int main(int argc, char *argv[])
     }
   }
 
-  printf("%s", pc_is_alive(&d) ? victory : tombstone);
-  printf("You defended your life in the face of %u deadly beasts.\n"
-         "You avenged the cruel and untimely murders of %u "
-         "peaceful dungeon residents.\n",
-         d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
-
+  if(quit) // If the user quit the game
+  {
+    printf("You have quit the game\n");
+    printf("%s",tombstone);
+    printf("You defended your life in the face of %u deadly beasts.\n"
+           "You avenged the cruel and untimely murders of %u "
+           "peaceful dungeon residents.\n",
+           d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
+  }
+  else
+  {
+    printf("%s", pc_is_alive(&d) ? victory : tombstone);
+    printf("You defended your life in the face of %u deadly beasts.\n"
+           "You avenged the cruel and untimely murders of %u "
+           "peaceful dungeon residents.\n",
+           d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
+  }
   pc_delete(d.pc.pc);
-
   delete_dungeon(&d);
 
   return 0;
