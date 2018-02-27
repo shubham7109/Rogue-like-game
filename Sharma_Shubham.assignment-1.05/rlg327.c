@@ -4,11 +4,12 @@
 #include <unistd.h>
 #include <ncurses.h>
 /* Very slow seed: 686846853 */
-
+#include "path.h"
 #include "dungeon.h"
 #include "pc.h"
 #include "npc.h"
 #include "move.h"
+
 
 const char *victory =
   "\n                                       o\n"
@@ -72,83 +73,256 @@ void usage(char *name)
           "          [-p|--pc <y> <x>] [-n|--nummon <count>]\n",
           name);
 
+          // Ends and clears the dungeon
+          clear();
+          endwin();
   exit(-1);
+}
+
+void render_ncurses_dungeon(dungeon_t *d){
+
+  pair_t p;
+  clear();
+  for (p[dim_y] = 0; p[dim_y] < DUNGEON_Y; p[dim_y]++) {
+    for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++) {
+      if (charpair(p)) {
+        mvprintw(p[dim_y], p[dim_x],"%c",charpair(p)->symbol);
+      } else {
+        switch (mappair(p)) {
+        case ter_wall:
+        case ter_wall_immutable:
+          mvprintw(p[dim_y], p[dim_x]," ");
+          break;
+        case ter_floor:
+        case ter_floor_room:
+          mvprintw(p[dim_y], p[dim_x],".");
+          break;
+        case ter_floor_hall:
+          mvprintw(p[dim_y], p[dim_x],"#");
+          break;
+        case ter_down_staircase:
+          mvprintw(p[dim_y], p[dim_x],">");
+          break;
+        case ter_up_staircase:
+          mvprintw(p[dim_y], p[dim_x],"<");
+          break;
+        case ter_debug:
+          mvprintw(p[dim_y], p[dim_x],"*");
+          //fprintf(stderr, "Debug character at %d, %d\n", p[dim_y], p[dim_x]);
+          break;
+        }
+      }
+    }
+    mvprintw(p[dim_y], p[dim_x],"\n");
+  }
+  mvprintw(p[dim_y], p[dim_x],"\n");
+}
+
+// Picks a number between the bounds with the bounds included in the range
+int pickAnumber(int min, int max){
+
+	// This function was inspired from a code on StackOverflow
+	int r;
+    int range = 1 + max - min;
+	int buckets = RAND_MAX / range;
+	int limit = buckets * range;
+    do
+    {
+        r = rand();
+    } while (r >= limit);
+
+    return min + (r / buckets);
+}
+
+
+void gen_staircase(dungeon_t *d){
+  int num_stairs = pickAnumber(1,20);
+
+
+
+  pair_t pair_stair;
+  int i=0;
+  // generate upstairs
+  for(i=0; i< num_stairs; i++){
+
+    int pickRoom = pickAnumber(1 , (d->num_rooms-1));
+    int min_x = d->rooms[pickRoom].position[dim_x];
+    int max_x = min_x + d->rooms[pickRoom].size[dim_x] - 1;
+    int xpos = pickAnumber(min_x,max_x);
+
+    int min_y = d->rooms[pickRoom].position[dim_y];
+    int max_y = min_y + d->rooms[pickRoom].size[dim_y] - 1;
+    int ypos = pickAnumber(min_y,max_y);
+
+    pair_stair[dim_x] = xpos;
+    pair_stair[dim_y] = ypos;
+    mappair(pair_stair) = ter_up_staircase;
+
+  }
+  // generate downstairs
+  for(i=0; i< num_stairs; i++){
+
+    int pickRoom = pickAnumber(1 , (d->num_rooms-1));
+    int min_x = d->rooms[pickRoom].position[dim_x];
+    int max_x = min_x + d->rooms[pickRoom].size[dim_x] - 1;
+    int xpos = pickAnumber(min_x,max_x);
+
+    int min_y = d->rooms[pickRoom].position[dim_y];
+    int max_y = min_y + d->rooms[pickRoom].size[dim_y] - 1;
+    int ypos = pickAnumber(min_y,max_y);
+
+    pair_stair[dim_x] = xpos;
+    pair_stair[dim_y] = ypos;
+    mappair(pair_stair) = ter_down_staircase;
+
+  }
+
+}
+void generate_new_dungeon(dungeon_t *d) // Used when going up or down a staircase
+{
+  delete_dungeon(d);
+  init_dungeon(d);
+  gen_dungeon(d);
+  config_pc(d);
+  gen_monsters(d);
+  gen_staircase(d);
 }
 
 void movePC(dungeon_t *d){
 
-  mvprintw(0,0,"In movePC");
-  int keyPress=getch();
+
+  int keyPress;
   bool onPress = false;
+  pair_t pos;
+  pos[dim_y] = d->pc.position[dim_y];
+  pos[dim_x] = d->pc.position[dim_x];
   while(!onPress){
     keyPress = getch();
-    mvprintw(0,0,"KEY PRESS: %d",keyPress );
     switch (keyPress) {
-      case 7:
+      case 55:
       case 121:
       // Move upper left
       mvprintw(0,0,"Move Upper left");
-      onPress = true;
+      pos[dim_x]--;
+  		pos[dim_y]--;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_x]++;
+        pos[dim_y]++;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 56:
       case 107:
       // Move up
       mvprintw(0,0,"Move Up");
-      onPress = true;
+  		pos[dim_y]--;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_y]++;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 57:
       case 117:
       // Move upper right
       mvprintw(0,0,"Move Upper right");
-      onPress = true;
+      pos[dim_x]++;
+  		pos[dim_y]--;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_x]--;
+        pos[dim_y]++;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 54:
       case 108:
       // Move right
       mvprintw(0,0,"Move right");
-      onPress = true;
+      pos[dim_x]++;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_x]--;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 51:
       case 110:
       // Move lower right
       mvprintw(0,0,"Move lower right");
-      onPress = true;
+      pos[dim_x]++;
+  		pos[dim_y]++;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_x]--;
+        pos[dim_y]--;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 50:
       case 106:
       // Move down
       mvprintw(0,0,"Move down");
-      onPress = true;
+  		pos[dim_y]++;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_y]--;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 49:
       case 98:
       // Move lower left
       mvprintw(0,0,"Move lower left");
-      onPress = true;
+      pos[dim_x]--;
+  		pos[dim_y]++;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_x]++;
+        pos[dim_y]--;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 52:
       case 104:
       // Move left
       mvprintw(0,0,"Move left");
-      onPress = true;
+      pos[dim_x]--;
+      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+        pos[dim_x]++;
+      }
+      else
+        move_character(d, &d->pc, pos);
+      return;
       break;
 
       case 62:
-      // Move downstairs
       mvprintw(0,0,"Move downstairs");
+      if(mappair(pos) == ter_down_staircase)
+        generate_new_dungeon(d);
       onPress = true;
       break;
 
       case 60:
       // Move upstairs
       mvprintw(0,0,"Move upstairs");
+      if(mappair(pos) == ter_up_staircase )
+        generate_new_dungeon(d);
       onPress = true;
       break;
 
@@ -175,12 +349,14 @@ void movePC(dungeon_t *d){
       // Quit the Game
       quit = true;
       mvprintw(0,0,"Quit the game");
+      clear();
       return; // Exits the loop
       break;
 
     }
   }
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -346,16 +522,17 @@ int main(int argc, char *argv[])
     read_pgm(&d, pgm_file);
   } else {
     gen_dungeon(&d);
+
   }
 
   config_pc(&d);
   gen_monsters(&d);
+  gen_staircase(&d);
 
   while (pc_is_alive(&d) && dungeon_has_npcs(&d) && !quit) {
-    render_dungeon(&d);
+    render_ncurses_dungeon(&d);
     do_moves(&d);
     movePC(&d);
-    clear();
   }
 
   // Ends and clears the dungeon

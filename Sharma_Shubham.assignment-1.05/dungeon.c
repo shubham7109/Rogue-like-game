@@ -618,6 +618,12 @@ void render_dungeon(dungeon_t *d){
         case ter_floor_hall:
           putchar('#');
           break;
+        case ter_down_staircase:
+          putchar('>');
+          break;
+        case ter_up_staircase:
+          putchar('<');
+          break;
         case ter_debug:
           putchar('*');
           fprintf(stderr, "Debug character at %d, %d\n", p[dim_y], p[dim_x]);
@@ -1006,6 +1012,8 @@ void render_distance_map(dungeon_t *d)
         case ter_floor:
         case ter_floor_room:
         case ter_floor_hall:
+        case ter_up_staircase:
+        case ter_down_staircase:
           if (d->pc_distance[p[dim_y]][p[dim_x]] == 255) {
             /* Display an asteric for distance infinity */
             putchar('*');
@@ -1042,6 +1050,8 @@ void render_tunnel_distance_map(dungeon_t *d)
         case ter_floor:
         case ter_floor_room:
         case ter_floor_hall:
+        case ter_up_staircase:
+        case ter_down_staircase:
           if (d->pc_tunnel[p[dim_y]][p[dim_x]] == 255) {
             /* Display an asteric for distance infinity */
             putchar('*');

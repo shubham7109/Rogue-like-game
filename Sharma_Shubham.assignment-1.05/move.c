@@ -61,12 +61,9 @@ void do_moves(dungeon_t *d)
     e->type = event_character_turn;
     /* Hack: New dungeons are marked.  Unmark and ensure PC goes at d->time, *
      * otherwise, monsters get a turn before the PC.                         */
-    if (d->is_new) {
-      d->is_new = 0;
-      e->time = d->time;
-    } else {
-      e->time = d->time + (1000 / d->pc.speed);
-    }
+
+    e->time = d->time + (1000 / d->pc.speed);
+
     e->sequence = 0;
     e->c = &d->pc;
     heap_insert(&d->events, e);
@@ -103,14 +100,6 @@ void do_moves(dungeon_t *d)
      * and recreated every time we leave and re-enter this function.    */
     e->c = NULL;
     event_delete(e);
-    pc_next_pos(d, next);
-    next[dim_x] += c->position[dim_x];
-    next[dim_y] += c->position[dim_y];
-    if (mappair(next) <= ter_floor) {
-      mappair(next) = ter_floor_hall;
-    }
-    move_character(d, c, next);
-
     dijkstra(d);
     dijkstra_tunnel(d);
   }

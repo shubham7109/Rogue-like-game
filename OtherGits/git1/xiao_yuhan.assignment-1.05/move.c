@@ -41,6 +41,11 @@ void move_character(dungeon_t *d, character_t *c, pair_t next)
     c->position[dim_x] = next[dim_x];
     d->character[c->position[dim_y]][c->position[dim_x]] = c;
   }
+
+
+  // Reset the path values after moving the character
+  dijkstra(d);
+  dijkstra_tunnel(d);
 }
 
 void do_moves(dungeon_t *d)
@@ -62,7 +67,7 @@ void do_moves(dungeon_t *d)
     /* The next line is buggy.  Monsters get first turn before PC.  *
      * Monster gen code always leaves PC in a monster-free room, so *
      * not a big issue, but it needs a better solution.             */
-    e->time = d->time + (1000 / d->pc.speed)
+    e->time = d->time + (1000 / d->pc.speed);
 ;
     e->sequence = 0;
     e->c = &d->pc;
