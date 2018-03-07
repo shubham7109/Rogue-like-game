@@ -1,0 +1,8 @@
+02/26/18: Working on assigning keyPress using ncurses for assignment 1.05
+02/26/18: Working to make render dungeon to display using ncurses!
+03/1/18: Implemented all methods. Now working on escape and monster list menu
+03/1/18: Everything is done except scrolling
+03/2/18: Testing to scroll
+03/2/18: Cleaning up project
+03/6/18: Testing project from the assignment specs
+03/6/18: Finalized the project by adding comments
