@@ -341,21 +341,25 @@ typedef struct dungeon dungeon_t;8,70
 typedef struct pc 10,105
 } pc_t;11,125
 
-rlg327.c,420
+rlg327.c,557
 const char *victory victory14,226
 const char *tombstone tombstone45,1797
   bool quit 67,2884
   bool monsterListMode 68,2905
   bool moveMonsterCheck 69,2936
-void usage(71,2969
-void render_ncurses_dungeon(85,3323
-int pickAnumber(134,4886
-void gen_staircase(150,5180
-void generate_new_dungeon(190,6345
-void displayMonstersList(201,6606
-void clearMonsterList(231,7804
-void movePC(239,8016
-int main(458,12672
+  int scrollFactor 70,2968
+  WINDOW *my_win;my_win71,3028
+void usage(73,3047
+void render_ncurses_dungeon(87,3401
+int pickAnumber(136,4964
+void gen_staircase(152,5258
+void generate_new_dungeon(192,6423
+void printMonsters(201,6622
+void displayMonstersList(233,7988
+void clearMonsterList(268,8590
+void movePC(276,8802
+WINDOW *create_newwin(create_newwin485,13422
+int main(494,13627
 
 utils.c,25
 int makedirectory(9,124

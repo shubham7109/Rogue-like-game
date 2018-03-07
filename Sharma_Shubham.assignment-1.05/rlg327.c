@@ -67,6 +67,8 @@ const char *tombstone =
   bool quit = false;
   bool monsterListMode =false;
   bool moveMonsterCheck = true;
+  int scrollFactor = 0; //Positive is down / Negative is Up
+  WINDOW *my_win;
 
 void usage(char *name)
 {
@@ -196,35 +198,70 @@ void generate_new_dungeon(dungeon_t *d) // Used when going up or down a staircas
   gen_monsters(d);
   gen_staircase(d);
 }
-
-// Displays the list of monsters below the rendered dungeon.
-void displayMonstersList(dungeon_t *d){
-
+void printMonsters(dungeon_t *d){
+  clear();
   pair_t p;
   int count =0;
   int xDisplacement=0;
   int yDisplacement=0;
+  wmove(my_win, 0, 0);
+  clear();
   for (p[dim_y] = 0; p[dim_y] < DUNGEON_Y; p[dim_y]++) {
     for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++) {
-      if (charpair(p)) {
+      if (charpair(p) && charpair(p)->symbol != '@') {
         yDisplacement = p[dim_y] - d->pc.position[dim_y];
         xDisplacement = p[dim_x] - d->pc.position[dim_x];
 
         if(yDisplacement>= 0 && xDisplacement >= 0)
-          mvprintw(21+count, 0," '%c' is %d South and %d East",charpair(p)->symbol,yDisplacement,xDisplacement);
+          mvprintw(count+scrollFactor, 0," '%c' is %d South and %d East",charpair(p)->symbol,yDisplacement,xDisplacement);
 
         else if(yDisplacement> 0 && xDisplacement < 0)
-          mvprintw(21+count, 0," '%c' is %d South and %d West",charpair(p)->symbol,yDisplacement,xDisplacement-xDisplacement-xDisplacement);
+          mvprintw(count+scrollFactor, 0," '%c' is %d South and %d West",charpair(p)->symbol,yDisplacement,xDisplacement-xDisplacement-xDisplacement);
 
         else if(yDisplacement< 0 && xDisplacement > 0)
-            mvprintw(21+count, 0," '%c' is %d North and %d East",charpair(p)->symbol,yDisplacement-yDisplacement-yDisplacement,xDisplacement);
+            mvprintw(count+scrollFactor, 0," '%c' is %d North and %d East",charpair(p)->symbol,yDisplacement-yDisplacement-yDisplacement,xDisplacement);
 
         else if(yDisplacement< 0 && xDisplacement < 0)
-          mvprintw(21+count, 0," '%c' is %d North and %d West",charpair(p)->symbol,yDisplacement-yDisplacement-yDisplacement,xDisplacement-xDisplacement-xDisplacement);
+          mvprintw(count+scrollFactor, 0," '%c' is %d North and %d West",charpair(p)->symbol,yDisplacement-yDisplacement-yDisplacement,xDisplacement-xDisplacement-xDisplacement);
 
         count++;
       }
     }
+  }
+}
+// Displays the list of monsters below the rendered dungeon.
+void displayMonstersList(dungeon_t *d){
+
+  printMonsters(d);
+  //int mx = 0;
+  //int my = 0;
+  //getmaxyx(stdscr, mx, my);
+
+  while (1){
+    // Escape
+    int value = getch();
+    if(value == 27){
+      monsterListMode =  false;
+      moveMonsterCheck = false;
+      clear();
+      break;
+    }
+    if(value == 113){
+      quit = true;
+      //mvprintw(0,0,"Quit the game");
+      clear();
+      break;
+    }
+    if(value == KEY_UP){
+      if(scrollFactor < 0)
+        scrollFactor++;
+      printMonsters(d);
+    }
+    if(value == KEY_DOWN){
+      scrollFactor--;
+      printMonsters(d);
+    }
+
   }
 }
 
@@ -238,7 +275,6 @@ void clearMonsterList(dungeon_t *d){
 
 void movePC(dungeon_t *d){
 
-
   int keyPress;
   bool onPress = false;
   pair_t pos;
@@ -250,7 +286,6 @@ void movePC(dungeon_t *d){
       case 55:
       case 121:
       // Move upper left
-      mvprintw(0,0,"Move Upper left");
       if(!monsterListMode){
         pos[dim_x]--;
     		pos[dim_y]--;
@@ -261,13 +296,14 @@ void movePC(dungeon_t *d){
         else
           move_character(d, &d->pc, pos);
       }
+      //mvprintw(0,0,"Move Upper left");
       return;
       break;
 
       case 56:
       case 107:
       // Move up
-      mvprintw(0,0,"Move Up");
+      //mvprintw(0,0,"Move Up");
       if(!monsterListMode){
         pos[dim_y]--;
         if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
@@ -282,7 +318,7 @@ void movePC(dungeon_t *d){
       case 57:
       case 117:
       // Move upper right
-      mvprintw(0,0,"Move Upper right");
+      //mvprintw(0,0,"Move Upper right");
       if(!monsterListMode){
         pos[dim_x]++;
     		pos[dim_y]--;
@@ -299,7 +335,7 @@ void movePC(dungeon_t *d){
       case 54:
       case 108:
       // Move right
-      mvprintw(0,0,"Move right");
+      //mvprintw(0,0,"Move right");
       if(!monsterListMode){
           pos[dim_x]++;
           if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
@@ -314,7 +350,7 @@ void movePC(dungeon_t *d){
       case 51:
       case 110:
       // Move lower right
-      mvprintw(0,0,"Move lower right");
+      //mvprintw(0,0,"Move lower right");
       if(!monsterListMode){
         pos[dim_x]++;
     		pos[dim_y]++;
@@ -331,7 +367,7 @@ void movePC(dungeon_t *d){
       case 50:
       case 106:
       // Move down
-      mvprintw(0,0,"Move down");
+      //mvprintw(0,0,"Move down");
       if(!monsterListMode){
         pos[dim_y]++;
         if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
@@ -346,7 +382,7 @@ void movePC(dungeon_t *d){
       case 49:
       case 98:
       // Move lower left
-      mvprintw(0,0,"Move lower left");
+      //mvprintw(0,0,"Move lower left");
       if(!monsterListMode){
         pos[dim_x]--;
     		pos[dim_y]++;
@@ -363,7 +399,7 @@ void movePC(dungeon_t *d){
       case 52:
       case 104:
       // Move left
-      mvprintw(0,0,"Move left");
+      //mvprintw(0,0,"Move left");
       if(!monsterListMode){
         pos[dim_x]--;
         if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
@@ -376,28 +412,32 @@ void movePC(dungeon_t *d){
       break;
 
       case 62:
-      mvprintw(0,0,"Move downstairs");
+      //mvprintw(0,0,"Move downstairs");
       if(!monsterListMode){
         if(mappair(pos) == ter_down_staircase)
-          generate_new_dungeon(d);
-        onPress = true;
+        {
+            generate_new_dungeon(d);
+            onPress = true;
+      }
       }
       break;
 
       case 60:
       // Move upstairs
-      mvprintw(0,0,"Move upstairs");
+      //mvprintw(0,0,"Move upstairs");
       if(!monsterListMode){
         if(mappair(pos) == ter_up_staircase )
-          generate_new_dungeon(d);
-        onPress = true;
+        {
+            generate_new_dungeon(d);
+            onPress = true;
+        }
       }
       break;
 
       case 32:
       case 53:
       // Do nothing
-      mvprintw(0,0,"Do nothing");
+      //mvprintw(0,0,"Do nothing");
       if(!monsterListMode)
         onPress = true;
       return;
@@ -405,34 +445,21 @@ void movePC(dungeon_t *d){
 
       case 109:
       // Display a list of Monsters
-      mvprintw(0,0,"Display a list of monsters");
+      //mvprintw(0,0,"Display a list of monsters");
       if(!monsterListMode)
       {
         monsterListMode = true;
         moveMonsterCheck = false;
         displayMonstersList(d);
       }
-      onPress = true;
+      //onPress = true;
       return;
       break;
 
-      case KEY_UP:
-      // Move up
-      if(monsterListMode){
-      scrl(1);
-      }
-      break;
-
-      case KEY_DOWN:
-      // Move downstairs
-      if(monsterListMode){
-      scrl(1);
-      }
-      break;
-
+/*
       case 27:
       // Escape
-      mvprintw(0,0,"Escape");
+      //mvprintw(0,0,"Escape");
       if(monsterListMode){
         monsterListMode =  false;
         moveMonsterCheck = false;
@@ -441,11 +468,11 @@ void movePC(dungeon_t *d){
         return;
       }
       break;
-
+*/
       case 113:
       // Quit the Game
       quit = true;
-      mvprintw(0,0,"Quit the game");
+      //mvprintw(0,0,"Quit the game");
       clear();
       return; // Exits the loop
       break;
@@ -454,6 +481,15 @@ void movePC(dungeon_t *d){
   }
 }
 
+// From https://stackoverflow.com/questions/29412315/move-a-cursor-inside-a-window-ncurses
+WINDOW *create_newwin(int height, int width, int starty, int startx)
+{
+  WINDOW *local_win = newwin(height, width, starty, startx);
+  box(local_win, 0, 0);
+  wrefresh(local_win);
+
+  return (local_win);
+}
 
 int main(int argc, char *argv[])
 {
@@ -484,7 +520,9 @@ int main(int argc, char *argv[])
   raw();
   noecho();
   keypad(stdscr, TRUE);
-  curs_set(0);
+  my_win = create_newwin(1000, 1000, 0, 0);
+  wmove(my_win, 0, 0);
+  wrefresh(my_win);
   ESCDELAY = 1; // REMOVE THE ESCAPE KEY DELAY
 
   /* The project spec requires '--load' and '--save'.  It's common  *
