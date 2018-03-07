@@ -63,7 +63,10 @@ const char *tombstone =
   "..\"\"\"\"\"....\"\"\"\"\"..\"\"...\"\"\".\n\n"
   "            You're dead.  Better luck in the next life.\n\n\n";
 
+// Global variables for assignment 1.05
   bool quit = false;
+  bool monsterListMode =false;
+  bool moveMonsterCheck = true;
 
 void usage(char *name)
 {
@@ -82,7 +85,16 @@ void usage(char *name)
 void render_ncurses_dungeon(dungeon_t *d){
 
   pair_t p;
-  clear();
+  // Clears the dungeon
+  for (p[dim_y] = 0; p[dim_y] < DUNGEON_Y; p[dim_y]++) {
+    for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++) {
+      int y, x;            // to store where you are
+      getyx(stdscr, y, x); // save current pos
+      move(y, 0);          // move to begining of line
+      clrtoeol();          // clear line
+      move(y, x);          // move back to where you were
+    }
+  }
   for (p[dim_y] = 0; p[dim_y] < DUNGEON_Y; p[dim_y]++) {
     for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++) {
       if (charpair(p)) {
@@ -136,10 +148,7 @@ int pickAnumber(int min, int max){
 
 
 void gen_staircase(dungeon_t *d){
-  int num_stairs = pickAnumber(1,20);
-
-
-
+  int num_stairs = pickAnumber(1,10);
   pair_t pair_stair;
   int i=0;
   // generate upstairs
@@ -188,6 +197,45 @@ void generate_new_dungeon(dungeon_t *d) // Used when going up or down a staircas
   gen_staircase(d);
 }
 
+// Displays the list of monsters below the rendered dungeon.
+void displayMonstersList(dungeon_t *d){
+
+  pair_t p;
+  int count =0;
+  int xDisplacement=0;
+  int yDisplacement=0;
+  for (p[dim_y] = 0; p[dim_y] < DUNGEON_Y; p[dim_y]++) {
+    for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++) {
+      if (charpair(p)) {
+        yDisplacement = p[dim_y] - d->pc.position[dim_y];
+        xDisplacement = p[dim_x] - d->pc.position[dim_x];
+
+        if(yDisplacement>= 0 && xDisplacement >= 0)
+          mvprintw(21+count, 0," '%c' is %d South and %d East",charpair(p)->symbol,yDisplacement,xDisplacement);
+
+        else if(yDisplacement> 0 && xDisplacement < 0)
+          mvprintw(21+count, 0," '%c' is %d South and %d West",charpair(p)->symbol,yDisplacement,xDisplacement-xDisplacement-xDisplacement);
+
+        else if(yDisplacement< 0 && xDisplacement > 0)
+            mvprintw(21+count, 0," '%c' is %d North and %d East",charpair(p)->symbol,yDisplacement-yDisplacement-yDisplacement,xDisplacement);
+
+        else if(yDisplacement< 0 && xDisplacement < 0)
+          mvprintw(21+count, 0," '%c' is %d North and %d West",charpair(p)->symbol,yDisplacement-yDisplacement-yDisplacement,xDisplacement-xDisplacement-xDisplacement);
+
+        count++;
+      }
+    }
+  }
+}
+
+void clearMonsterList(dungeon_t *d){
+  int i=0;
+  for(i=0; i<(d->num_monsters+5); i++){ // +5 just to be safe
+    move(i+21, 0);          // move to begining of line
+    clrtoeol();          // clear line
+  }
+}
+
 void movePC(dungeon_t *d){
 
 
@@ -203,14 +251,16 @@ void movePC(dungeon_t *d){
       case 121:
       // Move upper left
       mvprintw(0,0,"Move Upper left");
-      pos[dim_x]--;
-  		pos[dim_y]--;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_x]++;
-        pos[dim_y]++;
+      if(!monsterListMode){
+        pos[dim_x]--;
+    		pos[dim_y]--;
+        if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+          pos[dim_x]++;
+          pos[dim_y]++;
+        }
+        else
+          move_character(d, &d->pc, pos);
       }
-      else
-        move_character(d, &d->pc, pos);
       return;
       break;
 
@@ -218,27 +268,31 @@ void movePC(dungeon_t *d){
       case 107:
       // Move up
       mvprintw(0,0,"Move Up");
-  		pos[dim_y]--;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_y]++;
+      if(!monsterListMode){
+        pos[dim_y]--;
+        if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+          pos[dim_y]++;
+        }
+        else
+          move_character(d, &d->pc, pos);
       }
-      else
-        move_character(d, &d->pc, pos);
-      return;
+  		return;
       break;
 
       case 57:
       case 117:
       // Move upper right
       mvprintw(0,0,"Move Upper right");
-      pos[dim_x]++;
-  		pos[dim_y]--;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_x]--;
-        pos[dim_y]++;
+      if(!monsterListMode){
+        pos[dim_x]++;
+    		pos[dim_y]--;
+        if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+          pos[dim_x]--;
+          pos[dim_y]++;
+        }
+        else
+          move_character(d, &d->pc, pos);
       }
-      else
-        move_character(d, &d->pc, pos);
       return;
       break;
 
@@ -246,12 +300,14 @@ void movePC(dungeon_t *d){
       case 108:
       // Move right
       mvprintw(0,0,"Move right");
-      pos[dim_x]++;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_x]--;
-      }
-      else
-        move_character(d, &d->pc, pos);
+      if(!monsterListMode){
+          pos[dim_x]++;
+          if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+            pos[dim_x]--;
+          }
+          else
+            move_character(d, &d->pc, pos);
+        }
       return;
       break;
 
@@ -259,14 +315,16 @@ void movePC(dungeon_t *d){
       case 110:
       // Move lower right
       mvprintw(0,0,"Move lower right");
-      pos[dim_x]++;
-  		pos[dim_y]++;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_x]--;
-        pos[dim_y]--;
+      if(!monsterListMode){
+        pos[dim_x]++;
+    		pos[dim_y]++;
+        if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+          pos[dim_x]--;
+          pos[dim_y]--;
+        }
+        else
+          move_character(d, &d->pc, pos);
       }
-      else
-        move_character(d, &d->pc, pos);
       return;
       break;
 
@@ -274,27 +332,31 @@ void movePC(dungeon_t *d){
       case 106:
       // Move down
       mvprintw(0,0,"Move down");
-  		pos[dim_y]++;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_y]--;
+      if(!monsterListMode){
+        pos[dim_y]++;
+        if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+          pos[dim_y]--;
+        }
+        else
+          move_character(d, &d->pc, pos);
       }
-      else
-        move_character(d, &d->pc, pos);
-      return;
+  		return;
       break;
 
       case 49:
       case 98:
       // Move lower left
       mvprintw(0,0,"Move lower left");
-      pos[dim_x]--;
-  		pos[dim_y]++;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_x]++;
-        pos[dim_y]--;
+      if(!monsterListMode){
+        pos[dim_x]--;
+    		pos[dim_y]++;
+        if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+          pos[dim_x]++;
+          pos[dim_y]--;
+        }
+        else
+          move_character(d, &d->pc, pos);
       }
-      else
-        move_character(d, &d->pc, pos);
       return;
       break;
 
@@ -302,47 +364,82 @@ void movePC(dungeon_t *d){
       case 104:
       // Move left
       mvprintw(0,0,"Move left");
-      pos[dim_x]--;
-      if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
-        pos[dim_x]++;
+      if(!monsterListMode){
+        pos[dim_x]--;
+        if(mappair(pos) == ter_wall || mappair(pos) == ter_wall_immutable){
+          pos[dim_x]++;
+        }
+        else
+          move_character(d, &d->pc, pos);
       }
-      else
-        move_character(d, &d->pc, pos);
       return;
       break;
 
       case 62:
       mvprintw(0,0,"Move downstairs");
-      if(mappair(pos) == ter_down_staircase)
-        generate_new_dungeon(d);
-      onPress = true;
+      if(!monsterListMode){
+        if(mappair(pos) == ter_down_staircase)
+          generate_new_dungeon(d);
+        onPress = true;
+      }
       break;
 
       case 60:
       // Move upstairs
       mvprintw(0,0,"Move upstairs");
-      if(mappair(pos) == ter_up_staircase )
-        generate_new_dungeon(d);
-      onPress = true;
+      if(!monsterListMode){
+        if(mappair(pos) == ter_up_staircase )
+          generate_new_dungeon(d);
+        onPress = true;
+      }
       break;
 
       case 32:
       case 53:
       // Do nothing
       mvprintw(0,0,"Do nothing");
-      onPress = true;
+      if(!monsterListMode)
+        onPress = true;
+      return;
       break;
 
       case 109:
       // Display a list of Monsters
       mvprintw(0,0,"Display a list of monsters");
+      if(!monsterListMode)
+      {
+        monsterListMode = true;
+        moveMonsterCheck = false;
+        displayMonstersList(d);
+      }
       onPress = true;
+      return;
+      break;
+
+      case KEY_UP:
+      // Move up
+      if(monsterListMode){
+      scrl(1);
+      }
+      break;
+
+      case KEY_DOWN:
+      // Move downstairs
+      if(monsterListMode){
+      scrl(1);
+      }
       break;
 
       case 27:
       // Escape
       mvprintw(0,0,"Escape");
-      onPress = true;
+      if(monsterListMode){
+        monsterListMode =  false;
+        moveMonsterCheck = false;
+        clearMonsterList(d);
+        onPress = true;
+        return;
+      }
       break;
 
       case 113:
@@ -388,7 +485,7 @@ int main(int argc, char *argv[])
   noecho();
   keypad(stdscr, TRUE);
   curs_set(0);
-
+  ESCDELAY = 1; // REMOVE THE ESCAPE KEY DELAY
 
   /* The project spec requires '--load' and '--save'.  It's common  *
    * to have short and long forms of most switches (assuming you    *
@@ -530,9 +627,11 @@ int main(int argc, char *argv[])
   gen_staircase(&d);
 
   while (pc_is_alive(&d) && dungeon_has_npcs(&d) && !quit) {
+    moveMonsterCheck = true;
     render_ncurses_dungeon(&d);
-    do_moves(&d);
     movePC(&d);
+    if(!monsterListMode && moveMonsterCheck)
+      do_moves(&d);
   }
 
   // Ends and clears the dungeon
