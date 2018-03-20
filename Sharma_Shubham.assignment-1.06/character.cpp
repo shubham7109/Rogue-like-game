@@ -6,13 +6,74 @@
 #include "pc.h"
 #include "dungeon.h"
 
+int16_t * get_position(character *c){
+  return c->position;
+}
+
+uint32_t get_character_xPos(character *c){
+  return c->position[dim_x];
+}
+void set_character_xPos(uint32_t newX, character *c){
+  c->position[dim_x] = newX;
+}
+
+uint32_t get_character_yPos(character *c){
+  return c->position[dim_y];
+}
+void set_character_yPos(uint32_t newY, character *c){
+  c->position[dim_y] = newY;
+}
+
+uint32_t get_aKills(character *c){
+  return c->kills[kill_avenged];
+}
+void set_aKills(character *c, int num){
+  c->kills[kill_avenged] = num;
+}
+
+uint32_t get_dKills(character *c){
+  return c->kills[kill_direct];
+}
+void set_dKills(character *c, int num){
+  c->kills[kill_direct] = num;
+}
+
+uint8_t get_character_alive(character *c){
+  return c->alive;
+}
+void set_character_alive(character *c, uint8_t isalive){
+  c->alive = isalive;
+}
+
+int32_t get_character_speed(character *c){
+  return c->speed;
+}
+void set_character_speed(character *c, int32_t newspeed){
+  c->speed = newspeed;
+}
+
+void set_character_symbol(character *c, char desired){
+  c->symbol = desired;
+}
+char get_symbol(character *c){
+  return c->symbol;
+}
+
+void set_seqNumber(character *c, uint32_t num){
+  c->sequence_number = num;
+}
+
+void del_character(character *c){
+  delete(c);
+}
+
 void character_delete(void *v)
 {
   /* The PC is never malloc()ed anymore, do don't attempt to free it here. */
   character_t *c;
 
   if (v) {
-    c = v;
+    c = (character_t *) v; //Cast to type character_t
 
     if (c->npc) {
       npc_delete(c->npc);

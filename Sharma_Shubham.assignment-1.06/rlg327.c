@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
    * And the final switch, '--image', allows me to create a dungeon *
    * from a PGM image, so that I was able to create those more      *
    * interesting test dungeons for you.                             */
- 
+
  if (argc > 1) {
     for (i = 1, long_arg = 0; i < argc; i++, long_arg = 0) {
       if (argv[i][0] == '-') { /* All switches start with a dash */
@@ -189,10 +189,13 @@ int main(int argc, char *argv[])
               (long_arg && strcmp(argv[i], "-pc"))) {
             usage(argv[0]);
           }
-          if ((d.pc.position[dim_y] = atoi(argv[++i])) < 1 ||
-              d.pc.position[dim_y] > DUNGEON_Y - 2         ||
-              (d.pc.position[dim_x] = atoi(argv[++i])) < 1 ||
-              d.pc.position[dim_x] > DUNGEON_X - 2)         {
+          set_character_yPos(atoi(argv[++i]), d.pc);
+          set_character_xPos(atoi(argv[++i]), d.pc);
+          uint32_t yPos = get_character_yPos(d.pc);
+          uint32_t xPos = get_character_xPos(d.pc);
+
+          if (yPos < 1 || yPos > (DUNGEON_Y - 2) || xPos < 1 || xPos > (DUNGEON_X - 2))
+          {
             fprintf(stderr, "Invalid PC position.\n");
             usage(argv[0]);
           }
@@ -267,10 +270,9 @@ int main(int argc, char *argv[])
   printf("You defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
          "peaceful dungeon residents.\n",
-         d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
+         get_dKills(d.pc), get_aKills(d.pc));
 
-  pc_delete(d.pc.pc);
-
+  delete_character(d.pc);
   delete_dungeon(&d);
 
   return 0;
