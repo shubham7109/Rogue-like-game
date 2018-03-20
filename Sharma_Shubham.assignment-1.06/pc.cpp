@@ -35,7 +35,7 @@ void place_pc(dungeon_t *d)
 
   // TODO CHANGE THIS LATER
   unsigned i, j;
-  for(i = get_character_YPos(d->pc) - 5; i < get_character_YPos(d->pc) + 5; i++){
+  for(i = get_character_yPos(d->pc) - 5; i < get_character_yPos(d->pc) + 5; i++){
     for(j = get_character_xPos(d->pc) - 5; j < get_character_xPos(d->pc) + 5; j++){
       if(i > 0 && i < 105 && j > 0 && j < 160){
 	        set_visibility((pc *)d->pc, i, j, 1);
@@ -48,7 +48,7 @@ void config_pc(dungeon_t *d)
 {
   //memset(&d->pc, 0, sizeof (d->pc));
   d->pc = new pc; // alloc memory for a new pc
-  d->pc.symbol = '@';
+  d->pc->symbol = '@';
   place_pc(d);
   set_character_speed(d->pc,PC_SPEED);
   set_character_alive(d->pc,1);
@@ -133,35 +133,35 @@ uint32_t pc_next_pos(dungeon_t *d, pair_t dir)
       ((charxy(get_character_xPos(d->pc) + dir[dim_x] - 1,
                get_character_yPos(d->pc) + dir[dim_y] - 1) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x] - 1,
-                get_character_yPos(d->pc) + dir[dim_y] - 1) != &d->pc)) ||
+                get_character_yPos(d->pc) + dir[dim_y] - 1) != d->pc)) ||
        (charxy(get_character_xPos(d->pc) + dir[dim_x] - 1,
                get_character_yPos(d->pc) + dir[dim_y]) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x] - 1,
-                get_character_yPos(d->pc) + dir[dim_y]) != &d->pc)) ||
+                get_character_yPos(d->pc) + dir[dim_y]) != d->pc)) ||
        (charxy(get_character_xPos(d->pc) + dir[dim_x] - 1,
                get_character_yPos(d->pc) + dir[dim_y] + 1) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x] - 1,
-                get_character_yPos(d->pc) + dir[dim_y] + 1) != &d->pc)) ||
+                get_character_yPos(d->pc) + dir[dim_y] + 1) != d->pc)) ||
        (charxy(get_character_xPos(d->pc) + dir[dim_x],
                get_character_yPos(d->pc) + dir[dim_y] - 1) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x],
-                get_character_yPos(d->pc) + dir[dim_y] - 1) != &d->pc)) ||
+                get_character_yPos(d->pc) + dir[dim_y] - 1) != d->pc)) ||
        (charxy(get_character_xPos(d->pc) + dir[dim_x],
                get_character_yPos(d->pc) + dir[dim_y] + 1) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x],
-                get_character_yPos(d->pc) + dir[dim_y] + 1) != &d->pc)) ||
+                get_character_yPos(d->pc) + dir[dim_y] + 1) != d->pc)) ||
        (charxy(get_character_xPos(d->pc) + dir[dim_x] + 1,
                get_character_yPos(d->pc) + dir[dim_y] - 1) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x] + 1,
-                get_character_yPos(d->pc) + dir[dim_y] - 1) != &d->pc)) ||
+                get_character_yPos(d->pc) + dir[dim_y] - 1) != d->pc)) ||
        (charxy(get_character_xPos(d->pc) + dir[dim_x] + 1,
                get_character_yPos(d->pc) + dir[dim_y]) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x] + 1,
-                get_character_yPos(d->pc) + dir[dim_y]) != &d->pc)) ||
+                get_character_yPos(d->pc) + dir[dim_y]) != d->pc)) ||
        (charxy(get_character_xPos(d->pc) + dir[dim_x] + 1,
                get_character_yPos(d->pc) + dir[dim_y] + 1) &&
         (charxy(get_character_xPos(d->pc) + dir[dim_x] + 1,
-                get_character_yPos(d->pc) + dir[dim_y] + 1) != &d->pc)))) {
+                get_character_yPos(d->pc) + dir[dim_y] + 1) != d->pc)))) {
     dir[dim_x] = dir[dim_y] = 0;
   }
 
@@ -171,12 +171,12 @@ uint32_t pc_next_pos(dungeon_t *d, pair_t dir)
 uint32_t pc_in_room(dungeon_t *d, uint32_t room)
 {
   if ((room < d->num_rooms)                                     &&
-      (get_character_xPos(d->pc) >= d->rooms[room].position[dim_x]) &&
-      (get_character_xPos(d->pc) < (d->rooms[room].position[dim_x] +
-                                d->rooms[room].size[dim_x]))    &&
-      (get_character_yPos(d->pc) >= d->rooms[room].position[dim_y]) &&
-      (get_character_yPos(d->pc) < (d->rooms[room].position[dim_y] +
-                                d->rooms[room].size[dim_y]))) {
+      (get_character_xPos(d->pc) >= (unsigned)d->rooms[room].position[dim_x]) &&
+      (get_character_xPos(d->pc) < ((unsigned)d->rooms[room].position[dim_x] +
+                                    (unsigned)d->rooms[room].size[dim_x]))    &&
+      (get_character_yPos(d->pc) >= (unsigned)d->rooms[room].position[dim_y]) &&
+      (get_character_yPos(d->pc) < ((unsigned)d->rooms[room].position[dim_y] +
+                                    (unsigned)d->rooms[room].size[dim_y]))) {
     return 1;
   }
 

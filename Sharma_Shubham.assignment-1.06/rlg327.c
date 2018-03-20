@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
          "peaceful dungeon residents.\n",
          get_dKills(d.pc), get_aKills(d.pc));
 
-  delete_character(d.pc);
+  del_character(d.pc);
   delete_dungeon(&d);
 
   return 0;

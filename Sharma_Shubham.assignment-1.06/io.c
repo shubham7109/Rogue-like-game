@@ -103,8 +103,8 @@ void io_display_tunnel(dungeon_t *d)
   clear();
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
-      if (charxy(x, y) == &d->pc) {
-        mvaddch(y + 1, x, charxy(x, y)->symbol);
+      if (charxy(x, y) == d->pc) {
+        mvaddch(y + 1, x, get_character_symbol(charxy(x, y)));
       } else if (hardnessxy(x, y) == 255) {
         mvaddch(y + 1, x, '*');
       } else {
@@ -122,7 +122,7 @@ void io_display_distance(dungeon_t *d)
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       if (charxy(x, y)) {
-        mvaddch(y + 1, x, charxy(x, y)->symbol);
+        mvaddch(y + 1, x, get_character_symbol(charxy(x, y)));
       } else if (hardnessxy(x, y) != 0) {
         mvaddch(y + 1, x, ' ');
       } else {
@@ -161,8 +161,10 @@ static int compare_monster_distance(const void *v1, const void *v2)
   const character_t *const *c1 = v1;
   const character_t *const *c2 = v2;
 
-  return (dungeon->pc_distance[(*c1)->position[dim_y]][(*c1)->position[dim_x]] -
-          dungeon->pc_distance[(*c2)->position[dim_y]][(*c2)->position[dim_x]]);
+  return (dungeon->pc_distance[get_character_yPos((character_t *)c1)]
+                              [get_character_xPos((character_t *)c1)] -
+          dungeon->pc_distance[get_character_yPos((character_t *)c2)]
+                              [get_character_xPos((character_t *)c2)]);
 }
 
 static character_t *io_nearest_visible_monster(dungeon_t *d)
@@ -175,7 +177,7 @@ static character_t *io_nearest_visible_monster(dungeon_t *d)
   /* Get a linear list of monsters */
   for (count = 0, y = 1; y < DUNGEON_Y - 1; y++) {
     for (x = 1; x < DUNGEON_X - 1; x++) {
-      if (d->character[y][x] && d->character[y][x] != &d->pc) {
+      if (d->character[y][x] && d->character[y][x] != d->pc) {
         c[count++] = d->character[y][x];
       }
     }
@@ -186,7 +188,7 @@ static character_t *io_nearest_visible_monster(dungeon_t *d)
   qsort(c, count, sizeof (*c), compare_monster_distance);
 
   for (n = NULL, i = 0; i < count; i++) {
-    if (can_see(d, &d->pc, c[i])) {
+    if (can_see(d, d->pc, c[i])) {
       n = c[i];
       break;
     }
@@ -206,7 +208,7 @@ void io_display(dungeon_t *d)
   for (y = 0; y < 21; y++) {
     for (x = 0; x < 80; x++) {
       if (d->character[y][x]) {
-        mvaddch(y + 1, x, d->character[y][x]->symbol);
+        mvaddch(y + 1, x, get_character_symbol(d->character[y][x]));
       } else {
         switch (mapxy(x, y)) {
         case ter_wall:
@@ -239,22 +241,22 @@ void io_display(dungeon_t *d)
   }
 
   mvprintw(23, 1, "PC position is (%2d,%2d).",
-           d->pc.position[dim_x], d->pc.position[dim_y]);
+           get_character_xPos(d->pc), get_character_yPos(d->pc));
   mvprintw(22, 1, "%d known %s.", d->num_monsters,
            d->num_monsters > 1 ? "monsters" : "monster");
   if ((c = io_nearest_visible_monster(d))) {
     mvprintw(22, 30, "Nearest visible monster: %c at %d %c by %d %c.",
-             c->symbol,
-             abs(c->position[dim_y] - d->pc.position[dim_y]),
-             ((c->position[dim_y] - d->pc.position[dim_y]) <= 0 ?
+             get_character_symbol(c),
+             abs(get_character_yPos(c) - get_character_yPos(d->pc)),
+             ((get_character_yPos(c) - get_character_yPos(d->pc)) <= 0 ?
               'N' : 'S'),
-             abs(c->position[dim_x] - d->pc.position[dim_x]),
-             ((c->position[dim_x] - d->pc.position[dim_x]) <= 0 ?
+             abs(get_character_xPos(c) - get_character_xPos(d->pc)),
+             ((get_character_xPos(c) - get_character_xPos(d->pc)) <= 0 ?
               'E' : 'W'));
   } else {
     mvprintw(22, 30, "Nearest visible monster: NONE.");
   }
-           
+
 
   io_print_message_queue(0, 0);
 
@@ -280,11 +282,11 @@ uint32_t io_teleport_pc(dungeon_t *d)
     dest[dim_y] = rand_range(1, DUNGEON_Y - 2);
   } while (charpair(dest));
 
-  d->character[d->pc.position[dim_y]][d->pc.position[dim_x]] = NULL;
-  d->character[dest[dim_y]][dest[dim_x]] = &d->pc;
+  d->character[get_character_yPos(d->pc)][get_character_xPos(d->pc)] = NULL;
+  d->character[dest[dim_y]][dest[dim_x]] = d->pc;
 
-  d->pc.position[dim_y] = dest[dim_y];
-  d->pc.position[dim_x] = dest[dim_x];
+  set_character_yPos(dest[dim_y],d->pc);
+  set_character_xPos(dest[dim_x],d->pc);
 
   if (mappair(dest) < ter_floor) {
     mappair(dest) = ter_floor;
@@ -375,15 +377,15 @@ static void io_list_monsters_display(dungeon_t *d,
 
   for (i = 0; i < count; i++) {
     snprintf(s[i], 40, "%16s%c: %2d %s by %2d %s",
-             (c[i]->symbol == 'd' ? "A tenacious " :
+             (get_character_symbol(c[i]) == 'd' ? "A tenacious " :
               adjectives[rand() % (sizeof (adjectives) /
                                    sizeof (adjectives[0]))]),
-             c[i]->symbol,
-             abs(c[i]->position[dim_y] - d->pc.position[dim_y]),
-             ((c[i]->position[dim_y] - d->pc.position[dim_y]) <= 0 ?
+             get_character_symbol(c[i]),
+             abs(get_character_yPos(c[i]) - get_character_yPos(d->pc)),
+             ((get_character_yPos(c[i]) - get_character_yPos(d->pc)) <= 0 ?
               "North" : "South"),
-             abs(c[i]->position[dim_x] - d->pc.position[dim_x]),
-             ((c[i]->position[dim_x] - d->pc.position[dim_x]) <= 0 ?
+             abs(get_character_xPos(c[i]) - get_character_xPos(d->pc)),
+             ((get_character_xPos(c[i]) - get_character_xPos(d->pc)) <= 0 ?
               "East" : "West"));
     if (count <= 13) {
       /* Handle the non-scrolling case right here. *
@@ -417,7 +419,7 @@ static void io_list_monsters(dungeon_t *d)
   /* Get a linear list of monsters */
   for (count = 0, y = 1; y < DUNGEON_Y - 1; y++) {
     for (x = 1; x < DUNGEON_X - 1; x++) {
-      if (d->character[y][x] && d->character[y][x] != &d->pc) {
+      if (d->character[y][x] && d->character[y][x] != d->pc) {
         c[count++] = d->character[y][x];
       }
     }

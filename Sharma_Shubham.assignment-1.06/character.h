@@ -53,10 +53,10 @@ extern "C"{
   uint32_t get_character_xPos(character *c);
   void set_character_xPos(uint32_t newX, character *c);
   uint32_t get_dKills(character *c);
-  void set_direct_kills(character *c, int num);
+  void set_aKills(character *c, int num);
   uint32_t get_aKills(character *c);
   void set_dKills(character *c, int num);
-  void delete_character(character *c);
+  void del_character(character *c);
   uint8_t get_character_alive(character *c);
   void set_character_alive(character *c, uint8_t isalive);
   char get_character_symbol(character *c);

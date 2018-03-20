@@ -2,11 +2,10 @@
 # define PC_H
 
 # include <stdint.h>
-
 # include "dims.h"
-
+#define DUNGEON_X              80
+#define DUNGEON_Y              21
 typedef struct dungeon dungeon_t;
-
 #ifdef __cplusplus
 using namespace std;
 class pc: public character{

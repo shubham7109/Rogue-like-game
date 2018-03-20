@@ -55,7 +55,7 @@ void set_character_speed(character *c, int32_t newspeed){
 void set_character_symbol(character *c, char desired){
   c->symbol = desired;
 }
-char get_symbol(character *c){
+char get_character_symbol(character *c){
   return c->symbol;
 }
 
@@ -64,7 +64,7 @@ void set_seqNumber(character *c, uint32_t num){
 }
 
 void del_character(character *c){
-  delete(c);
+  delete(c); // calls pc.cpp
 }
 
 void character_delete(void *v)
