@@ -1,4 +1,4 @@
-COMS327-Assignment 1.05: User Interface with Ncurses
+COMS327-Assignment 1.06: "Fog of War” and porting to C++
 
 To execute the code, run the following commands:
 
@@ -13,7 +13,8 @@ make
 ./rlg327 --nummon 10
 
 
-This project was completed in C, using multiple user defined functions. It uses the nCurses library to display the rendered dungeon.
-This project also allows the player character to navigate across the dungeon. Also it lets the user scroll through a list of monsters on pressing the 'm' key.
+This project was completed in C, using multiple user defined functions. Majority of the code now runs on C++ which is a big conversion step from C.
+Also, now the PC only lights a room of 3x3 by toggling f. The PC also has a functionality to teleport using g randomly, or using t to teleport to a custom location.
 
-For any problem, please contact: shubham@iastate.edu
+
+For any problems, please contact: shubham@iastate.edu
