@@ -15,7 +15,7 @@ class character_t{
   public:
   char symbol;
   pair_t position;
-  uint32_t mode; // 0 for regular pc movement or 1 for teleport mode
+  uint32_t mode; // 0 for regular pc movement or 1 for fog mode or 2 teleport mode
   int32_t speed;
   uint32_t alive;
   /* Characters use to have a next_turn for the move queue.  Now that it is *

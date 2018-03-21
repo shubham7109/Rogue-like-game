@@ -205,7 +205,7 @@ void io_display(dungeon_t *d)
   for (y = 0; y < 21; y++) {
     for (x = 0; x < 80; x++) {
 		if (d->character[y][x]) {
-				if ( (int32_t) x < d->pc.position[dim_x] + 3 &&
+	if ( (int32_t) x < d->pc.position[dim_x] + 3 &&
              (int32_t) x > d->pc.position[dim_x] - 3 &&
              (int32_t) y < d->pc.position[dim_y] + 3 &&
              (int32_t) y > d->pc.position[dim_y] - 3)
@@ -213,7 +213,7 @@ void io_display(dungeon_t *d)
         mvaddch(y + 1, x, d->character[y][x]->symbol);
 }
       } else {
-	  if( (int32_t) x < d->pc.position[dim_x] + 3 &&
+    if( (int32_t) x < d->pc.position[dim_x] + 3 &&
         (int32_t) x > d->pc.position[dim_x] - 3 &&
         (int32_t) y < d->pc.position[dim_y] + 3 &&
         (int32_t) y > d->pc.position[dim_y] - 3 )
@@ -240,11 +240,10 @@ void io_display(dungeon_t *d)
           d->foggyDungeon[y] [x] = '>';
           break;
         default:
- /* Use zero as an error symbol, since it stands out somewhat, and it's *
-  * not otherwise used.                                                 */
           mvaddch(y + 1, x, '0');
-		            }
-		          }
+	}
+	}
+
         mvaddch(y+1, x, d->foggyDungeon[y][x]);
       }
     }
@@ -533,11 +532,6 @@ void io_handle_input(dungeon_t *d)
     case 'L':
       fail_code = 1;
       break;
-    case 'g':
-      /* Teleport the PC to a random place in the dungeon.              */
-      io_teleport_pc(d);
-      fail_code = 0;
-      break;
     case 'm':
       io_list_monsters(d);
       fail_code = 1;
@@ -648,6 +642,10 @@ void toggleTeleport(dungeon_t *d){
       case '.':
       case KEY_B2:
         break;
+      case 'g':
+      /* Teleport the PC to a random place in the dungeon.              */
+      io_teleport_pc(d);
+      break;
     }
   } while (key != 't');
 
