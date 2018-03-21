@@ -11,10 +11,11 @@
  * is ugly.                                                             */
 static dungeon_t *dungeon;
 
-typedef struct path {
+class path_t {
+public:
   heap_node_t *hn;
   uint8_t pos[2];
-} path_t;
+};
 
 static int32_t dist_cmp(const void *key, const void *with) {
   return ((int32_t) dungeon->pc_distance[((path_t *) key)->pos[dim_y]]
@@ -56,7 +57,7 @@ void dijkstra(dungeon_t *d)
       d->pc_distance[y][x] = 255;
     }
   }
-  d->pc_distance[get_character_yPos(d->pc)][get_character_xPos(d->pc)] = 0;
+  d->pc_distance[d->pc.position[dim_y]][d->pc.position[dim_x]] = 0;
 
   heap_init(&h, dist_cmp, NULL);
 
@@ -68,7 +69,7 @@ void dijkstra(dungeon_t *d)
     }
   }
 
-  while ((c = heap_remove_min(&h))) {
+  while ((c = (path_t * )  heap_remove_min(&h))) {
     c->hn = NULL;
     if ((p[c->pos[dim_y] - 1][c->pos[dim_x] - 1].hn) &&
         (d->pc_distance[c->pos[dim_y] - 1][c->pos[dim_x] - 1] >
@@ -170,7 +171,7 @@ void dijkstra_tunnel(dungeon_t *d)
       d->pc_tunnel[y][x] = 255;
     }
   }
-  d->pc_tunnel[get_character_yPos(d->pc)][get_character_xPos(d->pc)] = 0;
+  d->pc_tunnel[d->pc.position[dim_y]][d->pc.position[dim_x]] = 0;
 
   heap_init(&h, tunnel_cmp, NULL);
 
@@ -183,8 +184,8 @@ void dijkstra_tunnel(dungeon_t *d)
   }
 
   size = h.size;
-  while ((c = heap_remove_min(&h))) {
-    if (--size != h.size) {
+  while ((c = (path_t * )  heap_remove_min(&h))) {
+    if (--size != (int32_t) h.size) {
       exit(1);
     }
     c->hn = NULL;

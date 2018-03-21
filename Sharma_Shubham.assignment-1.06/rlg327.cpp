@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   dungeon_t d;
   time_t seed;
   struct timeval tv;
-  uint32_t i;
+  int32_t i;
   uint32_t do_load, do_save, do_seed, do_image, do_save_seed,
            do_save_image, do_place_pc;
   uint32_t long_arg;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
    * And the final switch, '--image', allows me to create a dungeon *
    * from a PGM image, so that I was able to create those more      *
    * interesting test dungeons for you.                             */
- 
+
  if (argc > 1) {
     for (i = 1, long_arg = 0; i < argc; i++, long_arg = 0) {
       if (argv[i][0] == '-') { /* All switches start with a dash */
@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
 
   io_init_terminal();
   init_dungeon(&d);
+  d.pc.mode  = 0;
 
   if (do_load) {
     read_dungeon(&d, load_file);
@@ -229,6 +230,12 @@ int main(int argc, char *argv[])
 
   config_pc(&d);
   gen_monsters(&d);
+
+  for (int col = 0; col < DUNGEON_Y; col++) {
+		for (int row = 0; row < DUNGEON_X; row++) {
+			d.foggyDungeon[col][row] = ' ';
+		}
+	}
 
   io_display(&d);
   io_queue_message("Seed is %u.", seed);
@@ -242,7 +249,7 @@ int main(int argc, char *argv[])
   if (do_save) {
     if (do_save_seed) {
        /* 10 bytes for number, please dot, extention and null terminator. */
-      save_file = malloc(18);
+      save_file = (char * ) malloc(18);
       sprintf(save_file, "%ld.rlg327", seed);
     }
     if (do_save_image) {
@@ -251,7 +258,7 @@ int main(int argc, char *argv[])
 	do_save_image = 0;
       } else {
 	/* Extension of 3 characters longer than image extension + null. */
-	save_file = malloc(strlen(pgm_file) + 4);
+	save_file = (char * ) malloc(strlen(pgm_file) + 4);
 	strcpy(save_file, pgm_file);
 	strcpy(strchr(save_file, '.') + 1, "rlg327");
       }

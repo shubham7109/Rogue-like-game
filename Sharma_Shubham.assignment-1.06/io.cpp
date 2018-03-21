@@ -2,7 +2,7 @@
 #include <ncurses.h>
 #include <ctype.h>
 #include <stdlib.h>
-
+#include "dims.h"
 #include "io.h"
 #include "move.h"
 #include "path.h"
@@ -10,15 +10,15 @@
 #include "utils.h"
 #include "dungeon.h"
 
-/* Same ugly hack we did in path.c */
 static dungeon_t *dungeon;
+void toggleFog(dungeon_t *d);
+void toggleTeleport(dungeon_t *d);
 
-typedef struct io_message {
-  /* Will print " --more-- " at end of line when another message follows. *
-   * Leave 10 extra spaces for that.                                      */
+class io_message_t {
+public:
   char msg[71];
-  struct io_message *next;
-} io_message_t;
+  struct io_message_t *next;
+};
 
 static io_message_t *io_head, *io_tail;
 
@@ -56,7 +56,7 @@ void io_queue_message(const char *format, ...)
   io_message_t *tmp;
   va_list ap;
 
-  if (!(tmp = malloc(sizeof (*tmp)))) {
+  if (!(tmp = (io_message_t *) malloc(sizeof (*tmp)))) {
     perror("malloc");
     exit(1);
   }
@@ -103,8 +103,8 @@ void io_display_tunnel(dungeon_t *d)
   clear();
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
-      if (charxy(x, y) == d->pc) {
-        mvaddch(y + 1, x, get_character_symbol(charxy(x, y)));
+      if (charxy(x, y) == &d->pc) {
+        mvaddch(y + 1, x, charxy(x, y)->symbol);
       } else if (hardnessxy(x, y) == 255) {
         mvaddch(y + 1, x, '*');
       } else {
@@ -122,7 +122,7 @@ void io_display_distance(dungeon_t *d)
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
       if (charxy(x, y)) {
-        mvaddch(y + 1, x, get_character_symbol(charxy(x, y)));
+        mvaddch(y + 1, x, charxy(x, y)->symbol);
       } else if (hardnessxy(x, y) != 0) {
         mvaddch(y + 1, x, ' ');
       } else {
@@ -158,13 +158,11 @@ void io_display_hardness(dungeon_t *d)
 
 static int compare_monster_distance(const void *v1, const void *v2)
 {
-  const character_t *const *c1 = v1;
-  const character_t *const *c2 = v2;
+  const character_t *const *c1 = (const character_t * const *)v1;
+  const character_t *const *c2 = (const character_t  *const *)v2;
 
-  return (dungeon->pc_distance[get_character_yPos((character_t *)c1)]
-                              [get_character_xPos((character_t *)c1)] -
-          dungeon->pc_distance[get_character_yPos((character_t *)c2)]
-                              [get_character_xPos((character_t *)c2)]);
+  return (dungeon->pc_distance[(*c1)->position[dim_y]][(*c1)->position[dim_x]] -
+          dungeon->pc_distance[(*c2)->position[dim_y]][(*c2)->position[dim_x]]);
 }
 
 static character_t *io_nearest_visible_monster(dungeon_t *d)
@@ -172,12 +170,12 @@ static character_t *io_nearest_visible_monster(dungeon_t *d)
   character_t **c, *n;
   uint32_t x, y, count, i;
 
-  c = malloc(d->num_monsters * sizeof (*c));
+  c = (character_t * * ) malloc(d->num_monsters * sizeof (*c));
 
   /* Get a linear list of monsters */
   for (count = 0, y = 1; y < DUNGEON_Y - 1; y++) {
     for (x = 1; x < DUNGEON_X - 1; x++) {
-      if (d->character[y][x] && d->character[y][x] != d->pc) {
+      if (d->character[y][x] && d->character[y][x] != &d->pc) {
         c[count++] = d->character[y][x];
       }
     }
@@ -188,7 +186,7 @@ static character_t *io_nearest_visible_monster(dungeon_t *d)
   qsort(c, count, sizeof (*c), compare_monster_distance);
 
   for (n = NULL, i = 0; i < count; i++) {
-    if (can_see(d, d->pc, c[i])) {
+    if (can_see(d, &d->pc, c[i])) {
       n = c[i];
       break;
     }
@@ -203,55 +201,67 @@ void io_display(dungeon_t *d)
 {
   uint32_t y, x;
   character_t *c;
-
   clear();
   for (y = 0; y < 21; y++) {
     for (x = 0; x < 80; x++) {
-      if (d->character[y][x]) {
-        mvaddch(y + 1, x, get_character_symbol(d->character[y][x]));
+		if (d->character[y][x]) {
+				if ( (int32_t) x < d->pc.position[dim_x] + 3 &&
+             (int32_t) x > d->pc.position[dim_x] - 3 &&
+             (int32_t) y < d->pc.position[dim_y] + 3 &&
+             (int32_t) y > d->pc.position[dim_y] - 3)
+{
+        mvaddch(y + 1, x, d->character[y][x]->symbol);
+}
       } else {
+	  if( (int32_t) x < d->pc.position[dim_x] + 3 &&
+        (int32_t) x > d->pc.position[dim_x] - 3 &&
+        (int32_t) y < d->pc.position[dim_y] + 3 &&
+        (int32_t) y > d->pc.position[dim_y] - 3 )
+{
         switch (mapxy(x, y)) {
         case ter_wall:
         case ter_wall_immutable:
-          mvaddch(y + 1, x, ' ');
+          d->foggyDungeon[y][x] = ' ';
           break;
         case ter_floor:
         case ter_floor_room:
-          mvaddch(y + 1, x, '.');
+          d->foggyDungeon[y][x] = '.';
           break;
         case ter_floor_hall:
-          mvaddch(y + 1, x, '#');
-          break;
+          d->foggyDungeon[y][x] = '#';
+			break;
         case ter_debug:
-          mvaddch(y + 1, x, '*');
+          d->foggyDungeon[y][x] = '*';
           break;
-        case ter_stairs_up:
-          mvaddch(y + 1, x, '<');
+		case ter_stairs_up:
+  		    d->foggyDungeon[y][x] = '<';
           break;
         case ter_stairs_down:
-          mvaddch(y + 1, x, '>');
+          d->foggyDungeon[y] [x] = '>';
           break;
         default:
  /* Use zero as an error symbol, since it stands out somewhat, and it's *
   * not otherwise used.                                                 */
           mvaddch(y + 1, x, '0');
-        }
+		            }
+		          }
+        mvaddch(y+1, x, d->foggyDungeon[y][x]);
       }
     }
   }
 
   mvprintw(23, 1, "PC position is (%2d,%2d).",
-           get_character_xPos(d->pc), get_character_yPos(d->pc));
+           d->pc.position[dim_x], d->pc.position[dim_y]);
   mvprintw(22, 1, "%d known %s.", d->num_monsters,
            d->num_monsters > 1 ? "monsters" : "monster");
   if ((c = io_nearest_visible_monster(d))) {
     mvprintw(22, 30, "Nearest visible monster: %c at %d %c by %d %c.",
-             get_character_symbol(c),
-             abs(get_character_yPos(c) - get_character_yPos(d->pc)),
-             ((get_character_yPos(c) - get_character_yPos(d->pc)) <= 0 ?
+             c->symbol,
+             abs(c->position[dim_y] - d->pc.position[dim_y]),
+             ((c->position[dim_y] - d->pc.position[dim_y]) <= 0 ?
               'N' : 'S'),
-             abs(get_character_xPos(c) - get_character_xPos(d->pc)),
-             ((get_character_xPos(c) - get_character_xPos(d->pc)) <= 0 ?
+             abs(c->position[dim_x] - d->pc.position[dim_x]),
+             ((c->position[dim_x] - d->pc.position[dim_x]) <= 0 ?
               'E' : 'W'));
   } else {
     mvprintw(22, 30, "Nearest visible monster: NONE.");
@@ -282,11 +292,11 @@ uint32_t io_teleport_pc(dungeon_t *d)
     dest[dim_y] = rand_range(1, DUNGEON_Y - 2);
   } while (charpair(dest));
 
-  d->character[get_character_yPos(d->pc)][get_character_xPos(d->pc)] = NULL;
-  d->character[dest[dim_y]][dest[dim_x]] = d->pc;
+  d->character[d->pc.position[dim_y]][d->pc.position[dim_x]] = NULL;
+  d->character[dest[dim_y]][dest[dim_x]] = &d->pc;
 
-  set_character_yPos(dest[dim_y],d->pc);
-  set_character_xPos(dest[dim_x],d->pc);
+  d->pc.position[dim_y] = dest[dim_y];
+  d->pc.position[dim_x] = dest[dim_x];
 
   if (mappair(dest) < ter_floor) {
     mappair(dest) = ter_floor;
@@ -367,7 +377,7 @@ static void io_list_monsters_display(dungeon_t *d,
   uint32_t i;
   char (*s)[40]; /* pointer to array of 40 char */
 
-  s = malloc(count * sizeof (*s));
+  s = (char (*) [40] ) malloc(count * sizeof (*s));
 
   mvprintw(3, 19, " %-40s ", "");
   /* Borrow the first element of our array for this string: */
@@ -377,15 +387,15 @@ static void io_list_monsters_display(dungeon_t *d,
 
   for (i = 0; i < count; i++) {
     snprintf(s[i], 40, "%16s%c: %2d %s by %2d %s",
-             (get_character_symbol(c[i]) == 'd' ? "A tenacious " :
+             (c[i]->symbol == 'd' ? "A tenacious " :
               adjectives[rand() % (sizeof (adjectives) /
                                    sizeof (adjectives[0]))]),
-             get_character_symbol(c[i]),
-             abs(get_character_yPos(c[i]) - get_character_yPos(d->pc)),
-             ((get_character_yPos(c[i]) - get_character_yPos(d->pc)) <= 0 ?
+             c[i]->symbol,
+             abs(c[i]->position[dim_y] - d->pc.position[dim_y]),
+             ((c[i]->position[dim_y] - d->pc.position[dim_y]) <= 0 ?
               "North" : "South"),
-             abs(get_character_xPos(c[i]) - get_character_xPos(d->pc)),
-             ((get_character_xPos(c[i]) - get_character_xPos(d->pc)) <= 0 ?
+             abs(c[i]->position[dim_x] - d->pc.position[dim_x]),
+             ((c[i]->position[dim_x] - d->pc.position[dim_x]) <= 0 ?
               "East" : "West"));
     if (count <= 13) {
       /* Handle the non-scrolling case right here. *
@@ -414,12 +424,12 @@ static void io_list_monsters(dungeon_t *d)
   character_t **c;
   uint32_t x, y, count;
 
-  c = malloc(d->num_monsters * sizeof (*c));
+  c = (character_t * * ) malloc(d->num_monsters * sizeof (*c));
 
   /* Get a linear list of monsters */
   for (count = 0, y = 1; y < DUNGEON_Y - 1; y++) {
     for (x = 1; x < DUNGEON_X - 1; x++) {
-      if (d->character[y][x] && d->character[y][x] != d->pc) {
+      if (d->character[y][x] && d->character[y][x] != &d->pc) {
         c[count++] = d->character[y][x];
       }
     }
@@ -431,7 +441,7 @@ static void io_list_monsters(dungeon_t *d)
 
   /* Display it */
   io_list_monsters_display(d, c, count);
-  free(c);
+ free(c);
 
   /* And redraw the dungeon */
   io_display(d);
@@ -441,7 +451,6 @@ void io_handle_input(dungeon_t *d)
 {
   uint32_t fail_code;
   int key;
-
   do {
     switch (key = getch()) {
     case '7':
@@ -554,7 +563,26 @@ void io_handle_input(dungeon_t *d)
       io_queue_message("Have fun!  And happy printing!");
       fail_code = 0;
       break;
-    default:
+
+        case 'f':
+        if(d->pc.mode == 0){
+          d->pc.mode = 1;
+          toggleFog(d);
+        }
+        else if (d->pc.mode == 1){
+          io_display(d);
+          d->pc.mode = 0;
+        }
+
+    	break;
+
+      // On teleport mode:
+    	case 't':
+          d->pc.mode = 3;
+    			d->pc.symbol = '*';
+          toggleTeleport(d);
+        break;
+
       /* Also not in the spec.  It's not always easy to figure out what *
        * key code corresponds with a given keystroke.  Print out any    *
        * unhandled key here.  Not only does it give a visual error      *
@@ -568,4 +596,106 @@ void io_handle_input(dungeon_t *d)
       fail_code = 1;
     }
   } while (fail_code);
+}
+
+void toggleTeleport(dungeon_t *d){
+  int key;
+  do {
+    toggleFog(d);
+    switch (key = getch()) {
+      case '7':
+      case 'y':
+      case KEY_HOME:
+        move_pc(d, 7);
+        break;
+      case '8':
+      case 'k':
+      case KEY_UP:
+        move_pc(d, 8);
+        break;
+      case '9':
+      case 'u':
+      case KEY_PPAGE:
+        move_pc(d, 9);
+        break;
+      case '6':
+      case 'l':
+      case KEY_RIGHT:
+        move_pc(d, 6);
+        break;
+      case '3':
+      case 'n':
+      case KEY_NPAGE:
+        move_pc(d, 3);
+        break;
+      case '2':
+      case 'j':
+      case KEY_DOWN:
+        move_pc(d, 2);
+        break;
+      case '1':
+      case 'b':
+      case KEY_END:
+        move_pc(d, 1);
+        break;
+      case '4':
+      case 'h':
+      case KEY_LEFT:
+        move_pc(d, 4);
+        break;
+      case '5':
+      case ' ':
+      case '.':
+      case KEY_B2:
+        break;
+    }
+  } while (key != 't');
+
+  d->pc.symbol = '@';
+  d->pc.mode = 0;
+  io_display(d);
+}
+
+void toggleFog(dungeon_t *d){
+  uint32_t y, x;
+  clear();
+  for (y = 0; y < 21; y++) {
+    for (x = 0; x < 80; x++) {
+      if (d->character[y][x]) {
+        mvaddch(y + 1, x, d->character[y][x]->symbol);
+      }
+      else {
+        switch (mapxy(x, y)) {
+        case ter_wall:
+        case ter_wall_immutable:
+          mvaddch(y + 1, x, ' ');
+          break;
+
+        case ter_floor:
+        case ter_floor_room:
+          mvaddch(y + 1, x, '.');
+          break;
+
+        case ter_floor_hall:
+          mvaddch(y + 1, x, '#');
+          break;
+
+        case ter_debug:
+          mvaddch(y + 1, x, '*');
+          break;
+
+        case ter_stairs_up:
+          mvaddch(y + 1, x, '<');
+          break;
+
+        case ter_stairs_down:
+          mvaddch(y + 1, x, '>');
+          break;
+
+        default:
+          mvaddch(y + 1, x, '0');
+        }
+      }
+    }
+  }
 }

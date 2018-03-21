@@ -1,0 +1,19 @@
+COMS327-Assignment 1.05: User Interface with Ncurses
+
+To execute the code, run the following commands:
+
+1)To only generate a new dungeon
+
+make
+./rlg327
+
+2)To load 10 number of monsters:
+
+make
+./rlg327 --nummon 10
+
+
+This project was completed in C, using multiple user defined functions. It uses the nCurses library to display the rendered dungeon.
+This project also allows the player character to navigate across the dungeon. Also it lets the user scroll through a list of monsters on pressing the 'm' key.
+
+For any problem, please contact: shubham@iastate.edu

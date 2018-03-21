@@ -1,11 +1,7 @@
 #ifndef NPC_H
 # define NPC_H
-
 # include <stdint.h>
-
 # include "dims.h"
-#include "character.h"
-
 # define NPC_SMART         0x00000001
 # define NPC_TELEPATH      0x00000002
 # define NPC_TUNNEL        0x00000004
@@ -38,37 +34,19 @@
 # define NPC_BIT29         0x20000000
 # define NPC_BIT30         0x40000000
 # define NPC_BIT31         0x80000000
-
 # define has_characteristic(character, bit)              \
   ((character)->npc->characteristics & NPC_##bit)
-
-typedef struct dungeon dungeon_t;
+class dungeon_t;
+class character_t;
 typedef uint32_t npc_characteristics_t;
-
-#ifdef __cplusplus
-
-using namespace std;
-
-class npc: public character{
- public:
+class npc_t {
+public:
   npc_characteristics_t characteristics;
   uint32_t have_seen_pc;
   pair_t pc_last_known_position;
-
 };
-
-extern "C" {
-# else
-typedef void npc;
-#endif
-
 void gen_monsters(dungeon_t *d);
-void npc_delete(npc *n);
-void npc_next_pos(dungeon_t *d, character *c, pair_t next);
+void npc_delete(npc_t *n);
+void npc_next_pos(dungeon_t *d, character_t *c, pair_t next);
 uint32_t dungeon_has_npcs(dungeon_t *d);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif
