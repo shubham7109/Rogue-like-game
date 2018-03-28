@@ -24,148 +24,138 @@ class MonsterDefinitions
 
     // Constructor to set up instance variables
     MonsterDefinitions(){
-      //char *filePath = strcat(getenv("HOME"), "/.rlg327/monster desc.txt");
-      //std::cout << filePath << '\n';
 
-      /*string line;
-      ifstream myfile (filePath);
-      if (myfile.is_open())
-      {
-        getline (myfile,line);
-        if(line != "RLG327 MONSTER DESCRIPTION 1")
-          exit(0); // exits the program
-
-        do{
-          getline (myfile,line)
-        }while
-        while ( getline (myfile,line) )
-        {
-          cout << line << '\n';
-
-          if(line == "BEGIN MONSTER"){
-
-          }
-          else if(line == ""){
-
-          }
-        }
-      myfile.close();
-      }
-      else cout << "Unable to open file" << endl;*/
-
-
-      char *dir = getenv("HOME");
-      char *path = strcat(dir, "/.rlg327/");
-
-      //Opens monster description text file
-      std::ifstream monster_desc;
-      monster_desc.open(strcat(path, "monster desc.txt"));
-      std::cout << path << '\n';
+      char *path = strcat(getenv("HOME"), "/.rlg327/monster_desc.txt");;
       string metadata;
-      getline(monster_desc, metadata);
-      std::cout << metadata << '\n';
-      //If metadata doesn't match, exit program
-      if(metadata != "RLG327 MONSTER DESCRIPTION 1"){
+      ifstream monster_desc (path);
+      if (monster_desc.is_open())
+      {
+        metadata = "";
+        getline (monster_desc,metadata);
+        if(metadata != "RLG327 MONSTER DESCRIPTION 1"){
+          std::cout << metadata << "\n";
+          std::cout << "Line 1 is incorrect!" << "\n";
+          exit(0); // exits the program
+        }
+      }
+      else{
+        std::cout << "File not found!" << "\n";
         exit(0);
       }
 
-      string tmp;
+      string line;
       int flag = 0;
-      while(getline(monster_desc, tmp)){
-        std::cout << tmp << '\n';
-        if(tmp == "" || tmp == "BEGIN MONSTER"){
+      while(getline(monster_desc, line)){
+        std::cout << line << "\n";
+        if(line == "" || line == "BEGIN MONSTER"){
           continue;
         }
-        if(tmp ==  "END"){
-          if(NAME == "" || RRTY == "" || COLOR == "" ||
-    	 SPEED == "" || DAM == "" || HP == "" ||
-    	 ABIL == "" || DESC == "" || flag == 1){
-            NAME = RRTY = COLOR = SPEED = DAM = HP = ABIL = DESC = "";
-    	flag = 0;
+        if(line ==  "END"){
+
+          if(NAME.length() == 0 ||
+          RRTY.length() == 0 ||
+          COLOR.length() == 0 ||
+    	    SPEED.length() == 0 ||
+          DAM.length() == 0 ||
+          HP.length() == 0 ||
+    	    ABIL.length() == 0 ||
+          DESC.length() == 0 ||
+          flag == 1){
+             flag = 0;
           }
           else{
     	//monster has everything, print to console
-    	cout << "Name: " << NAME << '\n';
-    	cout << "Rarity: " << RRTY << '\n';
-    	cout << "Color: " << COLOR << '\n';
-    	cout << "Speed: " << SPEED << '\n';
-    	cout << "Damage: " << DAM << '\n';
-    	cout << "Hit points: " << HP << '\n';
-    	cout << "Abillities: " << ABIL << '\n';
-    	cout << "Description: " << DESC << '\n';;
-    	cout << '\n' << '\n';
+    	cout << "Name: " << NAME << "\n";
+    	cout << "Rarity: " << RRTY << "\n";
+    	cout << "Color: " << COLOR << "\n";
+    	cout << "Speed: " << SPEED << "\n";
+    	cout << "Damage: " << DAM << "\n";
+    	cout << "Hit points: " << HP << "\n";
+    	cout << "Abillities: " << ABIL << "\n";
+    	cout << "Description: " << DESC << "\n";;
+    	cout << "\n" << "\n";
     	NAME = RRTY = COLOR = SPEED = DAM = HP = ABIL = DESC = "";
           }
         }
-        else if(tmp.substr(0, 4) == "NAME"){
+        else if(line.substr(0, 4) == "NAME"){
           if(NAME != ""){
-    	flag = 1;
+            std::cout << "SETTING FLAG TO 1" << "\n";
+    	       flag = 1;
           }
-          NAME = tmp.substr(5, tmp.length());
+          NAME = line.substr(5, line.length());
         }
-        else if(tmp.substr(0, 4) == "RRTY"){
+        else if(line.substr(0, 4) == "RRTY"){
           if(RRTY != ""){
+            std::cout << "SETTING FLAG TO 1" << "\n";
     	flag = 1;
           }
-          RRTY = tmp.substr(5, tmp.length());
+          RRTY = line.substr(5, line.length());
         }
-        else if(tmp.substr(0, 5) == "COLOR"){
+        else if(line.substr(0, 5) == "COLOR"){
           if(COLOR != ""){
+            std::cout << "SETTING FLAG TO 1" << "\n";
     	flag = 1;
           }
-          COLOR = tmp.substr(5, tmp.length());
+          COLOR = line.substr(5, line.length());
         }
-        else if(tmp.substr(0, 5) == "SPEED"){
+        else if(line.substr(0, 5) == "SPEED"){
           if(SPEED != ""){
+            std::cout << "SETTING FLAG TO 1" << "\n";
     	flag = 1;
           }
-          SPEED = tmp.substr(6, tmp.length());
+          SPEED = line.substr(6, line.length());
         }
-        else if(tmp.substr(0, 3) == "DAM"){
+        else if(line.substr(0, 3) == "DAM"){
           if(DAM != ""){
+            std::cout << "SETTING FLAG TO 1" << "\n";
     	flag = 1;
           }
-          DAM = tmp.substr(4, tmp.length());
+          DAM = line.substr(4, line.length());
         }
-        else if(tmp.substr(0, 2) == "HP"){
+        else if(line.substr(0, 2) == "HP"){
           if(HP != ""){
+            std::cout << "SETTING FLAG TO 1" << "\n";
     	flag = 1;
           }
-          HP = tmp.substr(3, tmp.length());
+          HP = line.substr(3, line.length());
         }
-        else if(tmp.substr(0, 4) == "ABIL"){
+        else if(line.substr(0, 4) == "ABIL"){
           if(ABIL != ""){
+            std::cout << "SETTING FLAG TO 1" << "\n";
     	flag = 1;
           }
-          ABIL = tmp.substr(5, tmp.length());
+          ABIL = line.substr(5, line.length());
         }
-        else if(tmp.substr(0, 4) == "DESC"){
+        else if(line.substr(0, 4) == "DESC"){
           if(DESC != ""){
+            std::cout << "SETTING FLAG TO 1" << "\n";
     	flag = 1;
           }
-          while(getline(monster_desc, tmp)){
-    	if(tmp == "."){
+          while(getline(monster_desc, line)){
+    	if(line == "."){
     	  break;
     	}
-    	if(tmp == "DESC"){
+    	if(line == "DESC"){
     	  continue;
     	}
     	else if(DESC == ""){
-    	  if(tmp.length() > 77){
+    	  if(line.length() > 77){
+          std::cout << "SETTING FLAG TO 1" << "\n";
     	    flag = 1;
     	  }
-    	  DESC = tmp + '\n';
+    	  DESC = line + "\n";
     	}
     	else{
-    	  if(tmp.length() > 77){
+    	  if(line.length() > 77){
+          std::cout << "SETTING FLAG TO 1" << "\n";
     	    flag = 1;
     	  }
-    	  DESC = DESC + tmp + '\n';
+    	  DESC = DESC + line + "\n";
     	}
           }
         }
         else{
-          flag = 1;
+            continue;
         }
       }
       monster_desc.close();
