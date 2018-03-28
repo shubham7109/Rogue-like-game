@@ -1,0 +1,13 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+Assignment 1.07: Parsing Monster Definitions
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+For this assignment we had to parse a monster description file (2 samples were given to us). The parsing as been fully implemented and all code is within 
+rlg327.cpp. Once the parse function is called I return 0 and we do not generate a dungeon and play the game as Dr. Sheaffer mentioned in the assignment
+pdf, "I suggest that you modify main to read the monster description files, print the test output, and exit, without ever entering the game proper". 
+This assignment works according to specs. To run do the following commands in terminal 
+make clobber 
+make 
+./rlg327
+MAKE SURE THE monsters_desc.txt FILE IS IN THE $HOME/.rlg327 folder. I have included Dr. Sheaffer's test monsters_desc.txt file inside my tar if needed for 
+testing. 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
