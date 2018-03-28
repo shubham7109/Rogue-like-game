@@ -1,8 +1,8 @@
-03/17/18: Starting 1.06
-03/17/18: Made changes to makefile
-03/17/18: starting conversion to cpp
-03/18/18: testing conversion
-03/18/18: Project now compiles. Working on the runtime errors
-03/18/18: Cleaning up project
-03/19/18: assigning teleport and fog toggle functionality.
-03/19/18: Finalized the project by adding comments
+03/25/18: Starting 1.07
+03/25/18: Made changes to makefile
+03/25/18: Removing all un-needed code
+03/26/18: testing declared class
+03/26/18: Project now compiles. Working on the runtime errors
+03/27/18: Cleaning up project
+03/27/18: assigning assignment spec functionality.
+03/27/18: Finalized the project by adding comments

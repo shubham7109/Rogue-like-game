@@ -1,20 +1,16 @@
-COMS327-Assignment 1.06: "Fog of War” and porting to C++
+COMS327-Assignment 1.07: Parsing monster definition
 
 To execute the code, run the following commands:
 
-1)To only generate a new dungeon
+1)To load a file
 
 make
 ./rlg327
 
-2)To load 10 number of monsters:
 
-make
-./rlg327 --nummon 10
+This project was completed in C++, using multiple user defined functions. 
+This code has the ability to pase informaiton about monsters and prints it to the screen.
 
-
-This project was completed in C, using multiple user defined functions. Majority of the code now runs on C++ which is a big conversion step from C.
-Also, now the PC only lights a room of 3x3 by toggling f. The PC also has a functionality to teleport using g randomly, or using t to teleport to a custom location.
 
 
 For any problems, please contact: shubham@iastate.edu

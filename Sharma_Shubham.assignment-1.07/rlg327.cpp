@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sys/time.h>
 #include <unistd.h>
+#include <stdlib.h>
 using namespace std;
 
 class MonsterDefinitions
@@ -21,10 +22,9 @@ class MonsterDefinitions
     string hitpoints;
     string damage;
     string rarity;
-
     string line; // Reads
-    bool fillAll = true; // Checker to see if all fields are given
-    bool justEnded = false;
+    bool fillAll; // Checker to see if all fields are given
+    bool justEnded;
 
 
     void printMonsterDef(){
@@ -74,7 +74,11 @@ class MonsterDefinitions
 
     // Constructor to set up instance variables
     MonsterDefinitions(){
-      char *path = strcat(getenv("HOME"), "/.rlg327/monster_desc.txt");;
+      fillAll = true;
+      justEnded = false;
+      char *path;
+      path = strcat(getenv("HOME"), "/.rlg327/monster_desc.txt");
+      
       ifstream inFile (path);
       if (inFile.is_open())
       {
@@ -82,12 +86,12 @@ class MonsterDefinitions
         getline (inFile,line);
         if(line != "RLG327 MONSTER DESCRIPTION 1"){
           std::cout << "Line 1 is incorrect!" << "\n";
-          exit(0); // exits the program
+          return; // exits the program
         }
       }
       else{
         std::cout << "File not found!" << "\n";
-        exit(0);
+        return;
       }
       description = "";
 
@@ -95,7 +99,7 @@ class MonsterDefinitions
       while(getline(inFile, line)){
         if(justEnded && line != "BEGIN MONSTER" && line != "" ){
           std::cout << "check BEGIN MONSTER / END line" << '\n';
-          exit(0);
+          return;
         }
         if(justEnded && line == "BEGIN MONSTER"){
           justEnded = false;
@@ -105,8 +109,10 @@ class MonsterDefinitions
           justEnded = true;
           if(fillAll == false){
              fillAll = true;
+	     //std::cout << "setting fills" << '\n';
           }
           else{
+	    //std::cout << "printing" << '\n';
             printMonsterDef();
           }
         }
