@@ -1,0 +1,20 @@
+COMS327-Assignment 1.06: "Fog of War” and porting to C++
+
+To execute the code, run the following commands:
+
+1)To only generate a new dungeon
+
+make
+./rlg327
+
+2)To load 10 number of monsters:
+
+make
+./rlg327 --nummon 10
+
+
+This project was completed in C, using multiple user defined functions. Majority of the code now runs on C++ which is a big conversion step from C.
+Also, now the PC only lights a room of 3x3 by toggling f. The PC also has a functionality to teleport using g randomly, or using t to teleport to a custom location.
+
+
+For any problems, please contact: shubham@iastate.edu
