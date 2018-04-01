@@ -10,6 +10,7 @@
 #include "npc.h"
 #include "move.h"
 #include "io.h"
+#include "object.h"
 
 const char *victory =
   "\n                                       o\n"
@@ -87,12 +88,11 @@ int main(int argc, char *argv[])
   char *load_file;
   char *pgm_file;
 
-  parse_descriptions(&d);
-  print_descriptions(&d);
-  destroy_descriptions(&d);
+  //parse_descriptions(&d);
 
-  return 0;
-  
+  //print_descriptions(&d);
+  //return 0;
+
   memset(&d, 0, sizeof (d));
 
   /* Default behavior: Seed with the time, generate a new dungeon, *
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
    * And the final switch, '--image', allows me to create a dungeon *
    * from a PGM image, so that I was able to create those more      *
    * interesting test dungeons for you.                             */
- 
+
  if (argc > 1) {
     for (i = 1, long_arg = 0; i < argc; i++, long_arg = 0) {
       if (argv[i][0] == '-') { /* All switches start with a dash */
@@ -224,6 +224,7 @@ int main(int argc, char *argv[])
 
   io_init_terminal();
   init_dungeon(&d);
+  parse_descriptions(&d);
 
   if (do_load) {
     read_dungeon(&d, load_file);
@@ -235,6 +236,7 @@ int main(int argc, char *argv[])
 
   config_pc(&d);
   gen_monsters(&d);
+  gen_object(&d);
 
   io_display(&d);
   io_queue_message("Seed is %u.", seed);
@@ -283,6 +285,7 @@ int main(int argc, char *argv[])
   }
 
   delete_dungeon(&d);
+  destroy_descriptions(&d);
 
   return 0;
 }
