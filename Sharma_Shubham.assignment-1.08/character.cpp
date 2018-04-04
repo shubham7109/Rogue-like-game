@@ -6,9 +6,69 @@
 #include "pc.h"
 #include "dungeon.h"
 
-void character_delete(void *c)
+
+int8_t *character_get_pos(const character *c)
 {
-  delete (character *) c;
+  return ((character *) c)->position;
+}
+
+int8_t character_get_y(const character *c)
+{
+  return ((character *) c)->position[dim_y];
+}
+
+void character_set_y(character *c, int8_t y)
+{
+  ((character *) c)->position[dim_y] = y;
+}
+
+int8_t character_get_x(const character *c)
+{
+  return ((character *) c)->position[dim_x];
+}
+
+void character_set_x(character *c, int8_t x)
+{
+  ((character *) c)->position[dim_x] = x;
+}
+
+uint32_t character_get_next_turn(const character *c)
+{
+  return ((character *) c)->next_turn;
+}
+
+void character_die(character *c)
+{
+  ((character *) c)->alive = 0;
+}
+
+int character_is_alive(const character *c)
+{
+  return ((character *) c)->alive;
+}
+
+void character_next_turn(character *c)
+{
+  character *the_character = (character *) c;
+
+  the_character->next_turn += (1000 / the_character->speed);
+}
+
+void character_reset_turn(character *c)
+{
+  character *the_character = (character *) c;
+
+  the_character->next_turn -= (1000 / the_character->speed);
+}
+
+char character_get_symbol(const character *c)
+{
+  return ((character *) c)->symbol;
+}
+
+const char *character_get_name(const character *c)
+{
+  return c->name;
 }
 
 static char *print_character(const void *v)
@@ -22,6 +82,11 @@ static char *print_character(const void *v)
   snprintf(string, 80, "%d:%d", c->next_turn, c->sequence_number);
 
   return string;
+}
+
+void character_delete(void *c)
+{
+  delete (character *) c;
 }
 
 int32_t compare_characters_by_next_turn(const void *character1,
@@ -132,68 +197,4 @@ uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, int is_pc)
   }
 
   return 1;
-}
-
-int8_t *character_get_pos(const character *c)
-{
-  return ((character *) c)->position;
-}
-
-int8_t character_get_y(const character *c)
-{
-  return ((character *) c)->position[dim_y];
-}
-
-void character_set_y(character *c, int8_t y)
-{
-  ((character *) c)->position[dim_y] = y;
-}
-
-int8_t character_get_x(const character *c)
-{
-  return ((character *) c)->position[dim_x];
-}
-
-void character_set_x(character *c, int8_t x)
-{
-  ((character *) c)->position[dim_x] = x;
-}
-
-uint32_t character_get_next_turn(const character *c)
-{
-  return ((character *) c)->next_turn;
-}
-
-void character_die(character *c)
-{
-  ((character *) c)->alive = 0;
-}
-
-int character_is_alive(const character *c)
-{
-  return ((character *) c)->alive;
-}
-
-void character_next_turn(character *c)
-{
-  character *the_character = (character *) c;
-
-  the_character->next_turn += (1000 / the_character->speed);
-}
-
-void character_reset_turn(character *c)
-{
-  character *the_character = (character *) c;
-
-  the_character->next_turn -= (1000 / the_character->speed);
-}
-
-char character_get_symbol(const character *c)
-{
-  return ((character *) c)->symbol;
-}
-
-const char *character_get_name(const character *c)
-{
-  return c->name;
 }

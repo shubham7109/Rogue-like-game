@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "dice.h"
 #include "utils.h"
 

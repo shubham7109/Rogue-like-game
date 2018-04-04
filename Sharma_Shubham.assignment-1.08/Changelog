@@ -1,7 +1,1 @@
-Assignment 1.08: Loading Monsters and Objects 
-Author: Rishab Narendra 
-
-03/30/2018: Created object.cpp class and object.h header file for instances of objects 
-03/31/3018: Added generate_monster() method to descriptions.cpp
-04/01/2018: Implemented color along with flickering effect 
-04/02/2018: Finished assignment completely and submitted 
+Assignment 1.08: Loading Monsters and Objects

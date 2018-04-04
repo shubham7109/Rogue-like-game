@@ -3,8 +3,8 @@
 
 # include <cstdio>
 # include <vector>
-
 # include "heap.h"
+//# include "macros.h"
 # include "dims.h"
 # include "character.h"
 # include "descriptions.h"
@@ -19,11 +19,12 @@
 #define ROOM_MAX_X             14
 #define ROOM_MAX_Y             8
 #define PC_VISUAL_RANGE        3
-#define NPC_VISUAL_RANGE       20
+#define NPC_VISUAL_RANGE       15
 #define PC_SPEED               10
+#define MAX_MONSTERS           12
 #define SAVE_DIR               ".rlg327"
 #define DUNGEON_SAVE_FILE      "dungeon"
-#define DUNGEON_SAVE_SEMANTIC  "RLG327"
+#define DUNGEON_SAVE_SEMANTIC  "RLG327-S2018"
 #define DUNGEON_SAVE_VERSION   0U
 #define MONSTER_DESC_FILE      "monster_desc.txt"
 #define OBJECT_DESC_FILE       "object_desc.txt"
@@ -39,7 +40,7 @@
 
 typedef enum __attribute__ ((__packed__)) terrain_type {
   ter_debug,
-  ter_unknown, /* For the PC's knowledge map. Strictly speaking, not terrain. */
+  ter_unknown,
   ter_wall,
   ter_wall_immutable,
   ter_floor,
@@ -55,7 +56,8 @@ typedef struct room {
   pair_t size;
   uint32_t connected;
 } room_t;
-
+// Converted to stuct to simulate previous assignments
+// also to avoid bunch of bugs.
 typedef struct dungeon {
   uint32_t num_rooms;
   room_t *rooms;
@@ -73,15 +75,23 @@ typedef struct dungeon {
   uint8_t pc_tunnel[DUNGEON_Y][DUNGEON_X];
   character *charmap[DUNGEON_Y][DUNGEON_X];
   object *objmap[DUNGEON_Y][DUNGEON_X];
-  character *pc; /* PC needs to be a pointer, since it is a class */
+  character *pc;
   heap_t next_turn;
-  uint16_t num_monsters;
-  uint16_t max_monsters;
   uint16_t num_objects;
   uint16_t max_objects;
-  uint32_t character_sequence_number;
   uint32_t save_and_exit;
   uint32_t quit_no_save;
+  uint16_t num_monsters;
+  uint16_t max_monsters;
+  uint32_t character_sequence_number;
+  /* Game time isn't strictly necessary.  It's implicit in the turn number *
+   * of the most recent thing removed from the event queue; however,       *
+   * including it here--and keeping it up to date--provides a measure of   *
+   * convenience, e.g., the ability to create a new event without explicit *
+   * information from the current event.                                   */
+  uint32_t time;
+  uint32_t is_new;
+  uint32_t quit;
   std::vector<monster_description> monster_descriptions;
   std::vector<object_description> object_descriptions;
 } dungeon_t;
