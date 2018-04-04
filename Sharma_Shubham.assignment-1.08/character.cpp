@@ -6,78 +6,36 @@
 #include "pc.h"
 #include "dungeon.h"
 
-void character_delete(character *c)
+void character_delete(void *c)
 {
-  delete c;
+  delete (character *) c;
 }
 
-int16_t *character_get_pos(character *c)
+static char *print_character(const void *v)
 {
-  return c->position;
+  (void) print_character;
+
+  const character *c = (const character *)v;
+
+  static char string[80];
+
+  snprintf(string, 80, "%d:%d", c->next_turn, c->sequence_number);
+
+  return string;
 }
 
-int16_t character_get_y(const character *c)
+int32_t compare_characters_by_next_turn(const void *character1,
+                                        const void *character2)
 {
-  return c->position[dim_y];
+  int32_t diff;
+
+  diff = (((character *) character1)->next_turn -
+          ((character *) character2)->next_turn);
+  return diff ? diff : (((character *) character1)->sequence_number -
+                        ((character *) character2)->sequence_number);
 }
 
-int16_t character_set_y(character *c, int16_t y)
-{
-  return c->position[dim_y] = y;
-}
-
-int16_t character_get_x(const character *c)
-{
-  return c->position[dim_x];
-}
-
-int16_t character_set_x(character *c, int16_t x)
-{
-  return c->position[dim_x] = x;
-}
-
-void character_die(character *c)
-{
-  c->alive = 0;
-}
-
-int character_is_alive(const character *c)
-{
-  return c->alive;
-}
-
-char character_get_symbol(const character *c)
-{
-  return c->symbol;
-}
-
-uint32_t character_get_speed(const character *c)
-{
-  return c->speed;
-}
-
-uint32_t character_get_dkills(const character *c)
-{
-  return c->kills[kill_direct];
-}
-
-uint32_t character_get_ikills(const character *c)
-{
-  return c->kills[kill_avenged];
-}
-
-uint32_t character_increment_dkills(character *c)
-{
-  return c->kills[kill_direct]++;
-}
-
-uint32_t character_increment_ikills(character *c, uint32_t k)
-{
-  return c->kills[kill_avenged] += k;
-}
-
-uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
-                 int is_pc, int learn)
+uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, int is_pc)
 {
   /* Application of Bresenham's Line Drawing Algorithm.  If we can draw *
    * a line from v to e without intersecting any walls, then v can see  *
@@ -132,8 +90,9 @@ uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
     c = a - del[dim_x];
     b = c - del[dim_x];
     for (i = 0; i <= del[dim_x]; i++) {
-      if (learn) {
-        pc_learn_terrain(d->PC, first, mappair(first));
+      if (is_pc) {
+        pc_learn_terrain(d->pc, first, mappair(first));
+        pc_see_object(d->pc, objpair(first));
       }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_x])) {
         return 0;
@@ -153,8 +112,9 @@ uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
     c = a - del[dim_y];
     b = c - del[dim_y];
     for (i = 0; i <= del[dim_y]; i++) {
-      if (learn) {
-        pc_learn_terrain(d->PC, first, mappair(first));
+      if (is_pc) {
+        pc_learn_terrain(d->pc, first, mappair(first));
+        pc_see_object(d->pc, objpair(first));
       }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_y])) {
         return 0;
@@ -172,4 +132,68 @@ uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
   }
 
   return 1;
+}
+
+int8_t *character_get_pos(const character *c)
+{
+  return ((character *) c)->position;
+}
+
+int8_t character_get_y(const character *c)
+{
+  return ((character *) c)->position[dim_y];
+}
+
+void character_set_y(character *c, int8_t y)
+{
+  ((character *) c)->position[dim_y] = y;
+}
+
+int8_t character_get_x(const character *c)
+{
+  return ((character *) c)->position[dim_x];
+}
+
+void character_set_x(character *c, int8_t x)
+{
+  ((character *) c)->position[dim_x] = x;
+}
+
+uint32_t character_get_next_turn(const character *c)
+{
+  return ((character *) c)->next_turn;
+}
+
+void character_die(character *c)
+{
+  ((character *) c)->alive = 0;
+}
+
+int character_is_alive(const character *c)
+{
+  return ((character *) c)->alive;
+}
+
+void character_next_turn(character *c)
+{
+  character *the_character = (character *) c;
+
+  the_character->next_turn += (1000 / the_character->speed);
+}
+
+void character_reset_turn(character *c)
+{
+  character *the_character = (character *) c;
+
+  the_character->next_turn -= (1000 / the_character->speed);
+}
+
+char character_get_symbol(const character *c)
+{
+  return ((character *) c)->symbol;
+}
+
+const char *character_get_name(const character *c)
+{
+  return c->name;
 }

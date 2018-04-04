@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 # define UTILS_H
 
+# include <cstdlib>
+
 /* Returns true if random float in [0,1] is less than *
  * numerator/denominator.  Uses only integer math.    */
 # define rand_under(numerator, denominator) \

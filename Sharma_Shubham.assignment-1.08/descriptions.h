@@ -38,6 +38,8 @@ typedef enum object_type {
 
 extern const char object_symbol[];
 
+class npc;
+
 class monster_description {
  private:
   std::string name, description;
@@ -60,9 +62,11 @@ class monster_description {
            const uint32_t abilities,
            const dice &hitpoints,
            const dice &damage,
-           const uint32_t rarity);
+	   const uint32_t rarity);
   std::ostream &print(std::ostream &o);
   char get_symbol() { return symbol; }
+
+  friend npc;
 };
 
 class object_description {
@@ -93,8 +97,8 @@ class object_description {
            const dice &speed,
            const dice &attrubute,
            const dice &value,
-           const bool artifact,
-           const uint32_t rarity);
+	   const bool artifact,
+	   const uint32_t rarity);
   std::ostream &print(std::ostream &o);
   /* Need all these accessors because otherwise there is a *
    * circular dependancy that is difficult to get around.  */
@@ -110,6 +114,7 @@ class object_description {
   inline const dice &get_speed() const { return speed; }
   inline const dice &get_attribute() const { return attribute; }
   inline const dice &get_value() const { return value; }
+  inline const uint32_t get_rarity() const { return rarity; }
 };
 
 std::ostream &operator<<(std::ostream &o, monster_description &m);

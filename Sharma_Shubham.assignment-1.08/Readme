@@ -1,0 +1,11 @@
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Assignment 1.08: Loading Monsters and Objects 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+This assignment loads all the monsters and objects that we parsed last week. I display the whole dungeon at all times so that the TA's can clearly see that this
+assignment meets the specifications. The code for displaying only the learned dungeon works(io_display()) according to specifications (even color) and can be 
+uncommented if TA's require. Other than the above information the game works perfectly. Help taken from jravey7 on github. 
+All new code in:
+object.cpp
+object.h
+io_display(), io_display_no_fog() in io.cpp, gen_monsters() in npc.cpp have been modified to work according to project requirements
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------

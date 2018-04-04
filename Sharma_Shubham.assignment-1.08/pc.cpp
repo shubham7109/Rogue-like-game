@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <ncurses.h>
 
 #include "string.h"
 
@@ -7,41 +8,52 @@
 #include "utils.h"
 #include "move.h"
 #include "path.h"
-#include "io.h"
 
+void delete_pc(character *the_pc)
+{
+  delete static_cast<pc *>(the_pc);
+}
 uint32_t pc_is_alive(dungeon_t *d)
 {
-  return d->PC && d->PC->alive;
+  return ((pc *) d->pc)->alive;
 }
 
 void place_pc(dungeon_t *d)
 {
-  d->PC->position[dim_y] = rand_range(d->rooms->position[dim_y],
-                                     (d->rooms->position[dim_y] +
-                                      d->rooms->size[dim_y] - 1));
-  d->PC->position[dim_x] = rand_range(d->rooms->position[dim_x],
-                                     (d->rooms->position[dim_x] +
-                                      d->rooms->size[dim_x] - 1));
+  ((pc *) d->pc)->position[dim_y] = rand_range(d->rooms->position[dim_y],
+                                               (d->rooms->position[dim_y] +
+                                                d->rooms->size[dim_y] - 1));
+  ((pc *) d->pc)->position[dim_x] = rand_range(d->rooms->position[dim_x],
+                                               (d->rooms->position[dim_x] +
+                                                d->rooms->size[dim_x] - 1));
 
-  pc_init_known_terrain(d->PC);
-  pc_observe_terrain(d->PC, d);
+  pc_init_known_terrain(d->pc);
+  pc_observe_terrain(d->pc, d);
 }
 
 void config_pc(dungeon_t *d)
 {
-  d->PC = new pc;
+  /* This should be in the PC constructor, now. */
+  pc *the_pc;
+  static dice pc_dice(0, 1, 4);
 
-  memset(d->PC, 0, sizeof (*d->PC));
-  d->PC->symbol = '@';
+  the_pc = new pc;
+  d->pc = (character *) the_pc;
+
+  the_pc->symbol = '@';
 
   place_pc(d);
 
-  d->PC->speed = PC_SPEED;
-  d->PC->alive = 1;
-  d->PC->sequence_number = 0;
-  d->PC->kills[kill_direct] = d->PC->kills[kill_avenged] = 0;
+  the_pc->speed = PC_SPEED;
+  the_pc->next_turn = 0;
+  the_pc->alive = 1;
+  the_pc->sequence_number = 0;
+  the_pc->color.push_back(COLOR_WHITE);
+  the_pc->damage = &pc_dice;
+  the_pc->name = "Isabella Garcia-Shapiro";
 
-  d->character_map[character_get_y(d->PC)][character_get_x(d->PC)] = d->PC;
+  d->charmap[the_pc->position[dim_y]]
+            [the_pc->position[dim_x]] = (character *) d->pc;
 
   dijkstra(d);
   dijkstra_tunnel(d);
@@ -49,159 +61,75 @@ void config_pc(dungeon_t *d)
 
 uint32_t pc_next_pos(dungeon_t *d, pair_t dir)
 {
-  static uint32_t have_seen_corner = 0;
-  static uint32_t count = 0;
-
   dir[dim_y] = dir[dim_x] = 0;
 
-  if (in_corner(d, d->PC)) {
-    if (!count) {
-      count = 1;
-    }
-    have_seen_corner = 1;
-  }
+  /* Tunnel to the nearest dungeon corner, then move around in hopes *
+   * of killing a couple of monsters before we die ourself.          */
 
-  /* First, eat anybody standing next to us. */
-  if (charxy(d->PC->position[dim_x] - 1, d->PC->position[dim_y] - 1)) {
-    dir[dim_y] = -1;
-    dir[dim_x] = -1;
-  } else if (charxy(d->PC->position[dim_x], d->PC->position[dim_y] - 1)) {
-    dir[dim_y] = -1;
-  } else if (charxy(d->PC->position[dim_x] + 1, d->PC->position[dim_y] - 1)) {
-    dir[dim_y] = -1;
-    dir[dim_x] = 1;
-  } else if (charxy(d->PC->position[dim_x] - 1, d->PC->position[dim_y])) {
-    dir[dim_x] = -1;
-  } else if (charxy(d->PC->position[dim_x] + 1, d->PC->position[dim_y])) {
-    dir[dim_x] = 1;
-  } else if (charxy(d->PC->position[dim_x] - 1, d->PC->position[dim_y] + 1)) {
-    dir[dim_y] = 1;
-    dir[dim_x] = -1;
-  } else if (charxy(d->PC->position[dim_x], d->PC->position[dim_y] + 1)) {
-    dir[dim_y] = 1;
-  } else if (charxy(d->PC->position[dim_x] + 1, d->PC->position[dim_y] + 1)) {
-    dir[dim_y] = 1;
-    dir[dim_x] = 1;
-  } else if (!have_seen_corner || count < 250) {
-    /* Head to a corner and let most of the NPCs kill each other off */
-    if (count) {
-      count++;
-    }
-    if (!against_wall(d, d->PC) && ((rand() & 0x111) == 0x111)) {
-      dir[dim_x] = (rand() % 3) - 1;
-      dir[dim_y] = (rand() % 3) - 1;
-    } else {
-      dir_nearest_wall(d, d->PC, dir);
-    }
-  }else {
-    /* And after we've been there, let's head toward the center of the map. */
-    if (!against_wall(d, d->PC) && ((rand() & 0x111) == 0x111)) {
-      dir[dim_x] = (rand() % 3) - 1;
-      dir[dim_y] = (rand() % 3) - 1;
-    } else {
-      dir[dim_x] = ((d->PC->position[dim_x] > DUNGEON_X / 2) ? -1 : 1);
-      dir[dim_y] = ((d->PC->position[dim_y] > DUNGEON_Y / 2) ? -1 : 1);
-    }
-  }
-
-  /* Don't move to an unoccupied location if that places us next to a monster */
-  if (!charxy(d->PC->position[dim_x] + dir[dim_x],
-              d->PC->position[dim_y] + dir[dim_y]) &&
-      ((charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
-               d->PC->position[dim_y] + dir[dim_y] - 1) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
-                d->PC->position[dim_y] + dir[dim_y] - 1) != d->PC)) ||
-       (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
-               d->PC->position[dim_y] + dir[dim_y]) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
-                d->PC->position[dim_y] + dir[dim_y]) != d->PC)) ||
-       (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
-               d->PC->position[dim_y] + dir[dim_y] + 1) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
-                d->PC->position[dim_y] + dir[dim_y] + 1) != d->PC)) ||
-       (charxy(d->PC->position[dim_x] + dir[dim_x],
-               d->PC->position[dim_y] + dir[dim_y] - 1) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x],
-                d->PC->position[dim_y] + dir[dim_y] - 1) != d->PC)) ||
-       (charxy(d->PC->position[dim_x] + dir[dim_x],
-               d->PC->position[dim_y] + dir[dim_y] + 1) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x],
-                d->PC->position[dim_y] + dir[dim_y] + 1) != d->PC)) ||
-       (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
-               d->PC->position[dim_y] + dir[dim_y] - 1) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
-                d->PC->position[dim_y] + dir[dim_y] - 1) != d->PC)) ||
-       (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
-               d->PC->position[dim_y] + dir[dim_y]) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
-                d->PC->position[dim_y] + dir[dim_y]) != d->PC)) ||
-       (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
-               d->PC->position[dim_y] + dir[dim_y] + 1) &&
-        (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
-                d->PC->position[dim_y] + dir[dim_y] + 1) != d->PC)))) {
-    dir[dim_x] = dir[dim_y] = 0;
+  if (in_corner(d, d->pc)) {
+    /*
+    dir[dim_x] = (mapxy(d->pc.position[dim_x] - 1,
+                        d->pc.position[dim_y]) ==
+                  ter_wall_immutable) ? 1 : -1;
+    */
+    dir[dim_y] = (mapxy(((pc *) d->pc)->position[dim_x],
+                        ((pc *) d->pc)->position[dim_y] - 1) ==
+                  ter_wall_immutable) ? 1 : -1;
+  } else {
+    dir_nearest_wall(d, d->pc, dir);
   }
 
   return 0;
 }
 
-uint32_t pc_in_room(dungeon_t *d, uint32_t room)
+void pc_learn_terrain(character *the_pc, pair_t pos, terrain_type_t ter)
 {
-  if ((room < d->num_rooms)                                     &&
-      (d->PC->position[dim_x] >= d->rooms[room].position[dim_x]) &&
-      (d->PC->position[dim_x] < (d->rooms[room].position[dim_x] +
-                                d->rooms[room].size[dim_x]))    &&
-      (d->PC->position[dim_y] >= d->rooms[room].position[dim_y]) &&
-      (d->PC->position[dim_y] < (d->rooms[room].position[dim_y] +
-                                d->rooms[room].size[dim_y]))) {
-    return 1;
+  ((pc *) the_pc)->known_terrain[pos[dim_y]][pos[dim_x]] = ter;
+  ((pc *) the_pc)->visible[pos[dim_y]][pos[dim_x]] = 1;
+}
+
+void pc_see_object(character *the_pc, object *o)
+{
+  if (o) {
+    o->has_been_seen();
   }
-
-  return 0;
 }
 
-void pc_learn_terrain(pc *p, pair_t pos, terrain_type_t ter)
-{
-  p->known_terrain[pos[dim_y]][pos[dim_x]] = ter;
-  p->visible[pos[dim_y]][pos[dim_x]] = 1;
-}
-
-void pc_reset_visibility(pc *p)
+void pc_reset_visibility(character *the_pc)
 {
   uint32_t y, x;
 
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
-      p->visible[y][x] = 0;
+      ((pc *) the_pc)->visible[y][x] = 0;
     }
   }
 }
 
-terrain_type_t pc_learned_terrain(pc *p, int16_t y, int16_t x)
+terrain_type_t pc_learned_terrain(character *the_pc, int8_t y, int8_t x)
 {
-  if (y < 0 || y >= DUNGEON_Y || x < 0 || x >= DUNGEON_X) {
-    io_queue_message("Invalid value to %s: %d, %d", __FUNCTION__, y, x);
-  }
-
-  return p->known_terrain[y][x];
+  return ((pc *) the_pc)->known_terrain[y][x];
 }
 
-void pc_init_known_terrain(pc *p)
+void pc_init_known_terrain(character *the_pc)
 {
   uint32_t y, x;
 
   for (y = 0; y < DUNGEON_Y; y++) {
     for (x = 0; x < DUNGEON_X; x++) {
-      p->known_terrain[y][x] = ter_unknown;
-      p->visible[y][x] = 0;
+      ((pc *) the_pc)->known_terrain[y][x] = ter_unknown;
+      ((pc *) the_pc)->visible[y][x] = 0;
     }
   }
 }
 
-void pc_observe_terrain(pc *p, dungeon_t *d)
+void pc_observe_terrain(character *the_pc, dungeon_t *d)
 {
   pair_t where;
-  int16_t y_min, y_max, x_min, x_max;
+  pc *p;
+  int8_t y_min, y_max, x_min, x_max;
+
+  p = (pc *) the_pc;
 
   y_min = p->position[dim_y] - PC_VISUAL_RANGE;
   if (y_min < 0) {
@@ -222,20 +150,20 @@ void pc_observe_terrain(pc *p, dungeon_t *d)
 
   for (where[dim_y] = y_min; where[dim_y] <= y_max; where[dim_y]++) {
     where[dim_x] = x_min;
-    can_see(d, p->position, where, 1, 1);
+    can_see(d, p->position, where, 1);
     where[dim_x] = x_max;
-    can_see(d, p->position, where, 1, 1);
+    can_see(d, p->position, where, 1);
   }
   /* Take one off the x range because we alreay hit the corners above. */
   for (where[dim_x] = x_min - 1; where[dim_x] <= x_max - 1; where[dim_x]++) {
     where[dim_y] = y_min;
-    can_see(d, p->position, where, 1, 1);
+    can_see(d, p->position, where, 1);
     where[dim_y] = y_max;
-    can_see(d, p->position, where, 1, 1);
+    can_see(d, p->position, where, 1);
   }       
 }
 
-int32_t is_illuminated(pc *p, int16_t y, int16_t x)
+int32_t is_illuminated(character *the_pc, int8_t y, int8_t x)
 {
-  return p->visible[y][x];
+  return ((pc *) the_pc)->visible[y][x];
 }

@@ -6,16 +6,6 @@
 # include "dims.h"
 # include "character.h"
 
-typedef uint32_t npc_characteristics_t;
-class monster_description;
-class npc : public character {
- public:
-  npc(const monster_description &m);
-  npc_characteristics_t characteristics;
-  uint32_t have_seen_pc;
-  pair_t pc_last_known_position;
-};
-
 # define NPC_SMART         0x00000001
 # define NPC_TELEPATH      0x00000002
 # define NPC_TUNNEL        0x00000004
@@ -53,6 +43,16 @@ class npc : public character {
   ((character)->npc->characteristics & NPC_##bit)
 
 typedef struct dungeon dungeon_t;
+
+typedef uint32_t npc_characteristics_t;
+class monster_description;
+class npc : public character {
+ public:
+  npc(const monster_description &m);
+  npc_characteristics_t characteristics;
+  uint32_t have_seen_pc;
+  pair_t pc_last_known_position;
+};
 
 void gen_monsters(dungeon_t *d);
 void npc_delete(npc *n);
