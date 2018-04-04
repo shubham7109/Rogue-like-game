@@ -2,14 +2,14 @@ CC = gcc
 CXX = g++
 ECHO = echo
 RM = rm -f
-
+# Changed the makefile here:
 CFLAGS = -Wall -ggdb -funroll-loops
 CXXFLAGS = -Wall -Wno-sign-compare -ggdb -funroll-loops
 LDFLAGS = -lncurses
 
 BIN = rlg327
-OBJS = rlg327.o dungeon.o heap.o utils.o path.o character.o \
-       npc.o pc.o move.o io.o descriptions.o dice.o object.o
+OBJS = rlg327.o heap.o dungeon.o path.o utils.o character.o \
+       pc.o npc.o move.o io.o descriptions.o dice.o object.o
 
 all: $(BIN) etags
 
@@ -31,12 +31,12 @@ $(BIN): $(OBJS)
 
 clean:
 	@$(ECHO) Removing all generated files
-	@$(RM) *.o $(BIN) *.d TAGS core vgcore.*
+	@$(RM) *.o $(BIN) *.d TAGS core vgcore.* gmon.out
 
 clobber: clean
 	@$(ECHO) Removing backup files
-	@$(RM) *~ \#*
+	@$(RM) *~ \#* *pgm
 
 etags:
 	@$(ECHO) Updating TAGS
-	@etags *.cpp *.h
+	@etags *.[ch]

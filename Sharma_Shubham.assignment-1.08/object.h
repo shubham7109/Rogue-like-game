@@ -6,7 +6,7 @@
 #include "descriptions.h"
 #include "dims.h"
 
-class object 
+class object
 {
   private:
     const std::string &name;
@@ -20,79 +20,63 @@ class object
     bool artifact;
     bool seen;
     object *next;
-    
   public:
   object(const object_description &o, pair_t p, object *next);
   ~object();
-  
   int32_t get_damage_base() const
   {
     return damage.get_base();
   }
-  
   int32_t get_damage_number() const
   {
     return damage.get_number();
   }
-  
   int32_t get_damage_sides() const
   {
     return damage.get_sides();
   }
-  
   char get_symbol()
   {
     return next ? '&' : object_symbol[type];
   }
-  
   uint32_t get_color()
   {
     return color;
   }
-  
   const char *get_name()
   {
     return name.c_str();
   }
-  
   int32_t get_speed()
   {
     return speed;
   }
-  
   int32_t roll_dice()
   {
     return damage.roll();
   }
-  
   int32_t get_type()
   {
     return type;
   }
-  
   uint32_t get_rarity()
   {
     return rarity;
   }
-  
   bool get_artifact()
   {
     return artifact;
   }
-  
-  bool have_seen() 
-  { 
-    return seen; 
+  bool have_seen()
+  {
+    return seen;
   }
-  
-  void has_been_seen() 
-  { 
-    seen = true; 
+  void has_been_seen()
+  {
+    seen = true;
   }
 };
-
 void generate_objects(dungeon_t *d);
 char object_get_symbol(object *o);
 void destroy_objects(dungeon_t *d);
-
 #endif

@@ -16,6 +16,89 @@
 
 void do_combat(dungeon_t *d, character *atk, character *def)
 {
+  // int can_see_atk, can_see_def;
+  // const char *organs[] = {
+  //   "liver",                   /*  0 */
+  //   "pancreas",                /*  1 */
+  //   "heart",                   /*  2 */
+  //   "eye",                     /*  3 */
+  //   "arm",                     /*  4 */
+  //   "leg",                     /*  5 */
+  //   "intestines",              /*  6 */
+  //   "gall bladder",            /*  7 */
+  //   "lungs",                   /*  8 */
+  //   "hand",                    /*  9 */
+  //   "foot",                    /* 10 */
+  //   "spinal cord",             /* 11 */
+  //   "pituitary gland",         /* 12 */
+  //   "thyroid",                 /* 13 */
+  //   "tongue",                  /* 14 */
+  //   "bladder",                 /* 15 */
+  //   "diaphram",                /* 16 */
+  //   "stomach",                 /* 17 */
+  //   "pharynx",                 /* 18 */
+  //   "esophagus",               /* 19 */
+  //   "trachea",                 /* 20 */
+  //   "urethra",                 /* 21 */
+  //   "spleen",                  /* 22 */
+  //   "ganglia",                 /* 23 */
+  //   "ear",                     /* 24 */
+  //   "subcutaneous tissue"      /* 25 */
+  //   "cerebellum",              /* 26 */ /* Brain parts begin here */
+  //   "hippocampus",             /* 27 */
+  //   "frontal lobe",            /* 28 */
+  //   "brain",                   /* 29 */
+  // };
+  // int part;
+  //
+  // if (def->alive) {
+  //   def->alive = 0;
+  //   charpair(def->position) = NULL;
+  //
+  //   if (def != d->PC) {
+  //     d->num_monsters--;
+  //   } else {
+  //     if ((part = rand() % (sizeof (organs) / sizeof (organs[0]))) < 26) {
+  //       io_queue_message("As the %c eats your %s, "
+  //                        "you wonder if there is an afterlife.",
+  //                        atk->symbol, organs[part]);
+  //     } else {
+  //       io_queue_message("Your last thoughts fade away as "
+  //                        "the %c eats your %s...",
+  //                        atk->symbol, organs[part]);
+  //     }
+  //     /* Queue an empty message, otherwise the game will not pause for *
+  //      * player to see above.                                          */
+  //     io_queue_message("");
+  //   }
+  //   atk->kills[kill_direct]++;
+  //   atk->kills[kill_avenged] += (def->kills[kill_direct] +
+  //                                 def->kills[kill_avenged]);
+  // }
+  //
+  // if (atk == d->PC) {
+  //   io_queue_message("You smite the %c!", def->symbol);
+  // }
+  //
+  // can_see_atk = can_see(d, character_get_pos(d->PC),
+  //                       character_get_pos(atk), 1, 0);
+  // can_see_def = can_see(d, character_get_pos(d->PC),
+  //                       character_get_pos(def), 1, 0);
+  //
+  // if (atk != d->PC && def != d->PC) {
+  //   if (can_see_atk && !can_see_def) {
+  //     io_queue_message("The %c callously murders some poor, "
+  //                      "defenseless creature.", atk->symbol);
+  //   }
+  //   if (can_see_def && !can_see_atk) {
+  //     io_queue_message("Something kills the helpless %c.", def->symbol);
+  //   }
+  //   if (can_see_atk && can_see_def) {
+  //     io_queue_message("You watch in abject horror as the %c "
+  //                      "gruesomely murders the %c!", atk->symbol, def->symbol);
+  //   }
+  // }
+
   character_die(def);
   if (def != d->pc) {
     d->num_monsters--;
@@ -46,6 +129,7 @@ void do_moves(dungeon_t *d)
 {
   pair_t next;
   character *c;
+  //event_t *e;
 
   /* Remove the PC when it is PC turn.  Replace on next call.  This allows *
    * use to completely uninit the heap when generating a new level without *
@@ -55,8 +139,8 @@ void do_moves(dungeon_t *d)
     heap_insert(&d->next_turn, d->pc);
   }
 
-  while (pc_is_alive(d) && ((c = ((character *)
-                                  heap_remove_min(&d->next_turn))) != d->pc)) {
+  while (pc_is_alive(d) &&
+        ((c = ((character *) heap_remove_min(&d->next_turn))) != d->pc)) {
     if (!character_is_alive(c)) {
       if (d->charmap[character_get_y(c)][character_get_x(c)] == c) {
         d->charmap[character_get_y(c)][character_get_x(c)] = NULL;
@@ -68,15 +152,11 @@ void do_moves(dungeon_t *d)
     }
 
     character_next_turn(c);
-
     npc_next_pos(d, c, next);
     move_character(d, c, next);
-
     heap_insert(&d->next_turn, c);
   }
-
   io_display_no_fog(d);
-
   if (pc_is_alive(d) && c == d->pc) {
     character_next_turn(c);
     io_handle_input(d);
@@ -127,6 +207,7 @@ static void new_dungeon_level(dungeon_t *d, uint32_t dir)
     break;
   }
 }
+
 
 uint32_t move_pc(dungeon_t *d, uint32_t dir)
 {

@@ -1,6 +1,5 @@
 #include <vector>
 #include <cstring>
-
 #include "object.h"
 #include "dungeon.h"
 #include "utils.h"
@@ -9,8 +8,8 @@ void generate_objects(dungeon_t *d)
 {
   int i;
   memset(d->objmap, 0, sizeof (d->objmap));
-  
-  for (i = 0; i < d->max_objects; i++) 
+
+  for (i = 0; i < d->max_objects; i++)
   {
     object *o;
     uint32_t room;
@@ -25,7 +24,21 @@ void generate_objects(dungeon_t *d)
     (d->rooms[room].position[dim_x] +
     d->rooms[room].size[dim_x] - 1));
     o = new object(od, p, d->objmap[p[dim_y]][p[dim_x]]);
-    d->objmap[p[dim_y]][p[dim_x]] = o; 
+    d->objmap[p[dim_y]][p[dim_x]] = o;
+  }
+}
+void destroy_objects(dungeon_t *d)
+{
+  uint32_t y, x;
+  for (y = 0; y < 21; y++)
+  {
+    for (x = 0; x < 80; x++)
+    {
+      if (d->objmap[y][x])
+      {
+        delete d->objmap[y][x];
+      }
+    }
   }
 }
 
@@ -50,26 +63,10 @@ object::object(const object_description &o, pair_t p, object *next) :
   position[dim_x] = p[dim_x];
   position[dim_y] = p[dim_y];
 }
-
 object::~object()
 {
-  if (next) 
+  if (next)
   {
     delete next;
-  }
-}
-
-void destroy_objects(dungeon_t *d)
-{
-  uint32_t y, x;
-  for (y = 0; y < 21; y++) 
-  {
-    for (x = 0; x < 80; x++) 
-    {
-      if (d->objmap[y][x]) 
-      {
-        delete d->objmap[y][x];
-      }
-    }
   }
 }

@@ -7,14 +7,15 @@
 #include "character.h"
 #include "move.h"
 #include "path.h"
+#include "pc.h"
 #include "ncurses.h"
 
 void gen_monsters(dungeon_t *d)
 {
   int i;
   d->num_monsters = d->max_monsters;
-  
-  for (i = 0; i < d->num_monsters; i++) 
+
+  for (i = 0; i < d->num_monsters; i++)
   {
     npc *mon;
     const std::vector<monster_description> &v = d->monster_descriptions;
@@ -52,7 +53,7 @@ void npc_next_pos_rand_tunnel(dungeon_t *d, character *c, pair_t next)
     }
   } while (mappair(n) == ter_wall_immutable);
 
-  if (hardnesspair(n) <= 60) {
+  if (hardnesspair(n) <= 85) {
     if (hardnesspair(n)) {
       hardnesspair(n) = 0;
       mappair(n) = ter_floor_hall;
@@ -65,7 +66,7 @@ void npc_next_pos_rand_tunnel(dungeon_t *d, character *c, pair_t next)
     next[dim_x] = n[dim_x];
     next[dim_y] = n[dim_y];
   } else {
-    hardnesspair(n) -= 60;
+    hardnesspair(n) -= 85;
   }
 }
 
@@ -137,10 +138,8 @@ void npc_next_pos_line_of_sight_tunnel(dungeon_t *d,
   pair_t dir;
   pc *the_pc;
   npc *the_npc;
-
   the_pc = (pc *) d->pc;
   the_npc = (npc *) c;
-
   dir[dim_y] = the_pc->position[dim_y] - the_npc->position[dim_y];
   dir[dim_x] = the_pc->position[dim_x] - the_npc->position[dim_x];
   if (dir[dim_y]) {
@@ -173,9 +172,7 @@ void npc_next_pos_line_of_sight_tunnel(dungeon_t *d,
 void npc_next_pos_gradient(dungeon_t *d, character *c, pair_t next)
 {
   npc *the_npc;
-
   the_npc = (npc *) c;
-
   /* Handles both tunneling and non-tunneling versions */
   pair_t min_next;
   uint16_t min_cost;
@@ -381,7 +378,6 @@ static void npc_next_pos_05(dungeon_t *d, character *c, pair_t next)
 {
   pc *the_pc;
   npc *the_npc;
-
   the_pc = (pc *) d->pc;
   the_npc = (npc *) c;
 
@@ -447,7 +443,7 @@ static void npc_next_pos_0a(dungeon_t *d, character *c, pair_t next)
   if (rand() & 1) {
     npc_next_pos_rand(d, c, next);
   } else {
-        npc_next_pos_02(d, c, next);
+    npc_next_pos_02(d, c, next);
   }
 }
 

@@ -48,13 +48,10 @@
 
 typedef struct dungeon dungeon_t;
 typedef uint32_t npc_characteristics_t;
-
 void gen_monsters(dungeon_t *d);
 void npc_next_pos(dungeon_t *d, character *c, pair_t next);
 uint32_t dungeon_has_npcs(dungeon_t *d);
-
 class monster_description;
-
 class npc : public character {
  public:
   npc(dungeon_t *d, const monster_description &m);
