@@ -264,58 +264,59 @@ npc.h,1409
 # define has_characteristic(46,1465
 typedef struct dungeon dungeon_t;49,1575
 typedef uint32_t npc_characteristics_t;50,1609
-class npc 58,1813
-  npc_characteristics_t characteristics;npc::characteristics61,1904
-  uint32_t have_seen_pc;npc::have_seen_pc62,1945
-  pair_t pc_last_known_position;npc::pc_last_known_position63,1970
-  const char *description;npc::description64,2003
+class npc 55,1810
+  npc_characteristics_t characteristics;npc::characteristics58,1901
+  uint32_t have_seen_pc;npc::have_seen_pc59,1942
+  pair_t pc_last_known_position;npc::pc_last_known_position60,1967
+  const char *description;npc::description61,2000
 
-object.h,1581
+object.h,1580
 #define OBJECT_H2,17
-class object 9,99
-    const std::string &name;object::name12,126
-    const std::string &description;object::description13,155
-    object_type_t type;object::type14,191
-    uint32_t color;object::color15,215
-    pair_t position;object::position16,235
-    const dice &damage;object::damage17,256
-    int32_t hit,object::hit18,280
-    int32_t hit, dodge,object::dodge18,280
-    int32_t hit, dodge, defence,object::defence18,280
-    int32_t hit, dodge, defence, weight,object::weight18,280
-    int32_t hit, dodge, defence, weight, speed,object::speed18,280
-    int32_t hit, dodge, defence, weight, speed, attribute,object::attribute18,280
-    int32_t hit, dodge, defence, weight, speed, attribute, value;object::value18,280
-    uint32_t rarity;object::rarity19,346
-    bool artifact;object::artifact20,367
-    bool seen;object::seen21,386
-    object *next;object::next22,401
-  int32_t get_damage_base(object::get_damage_base28,513
-  int32_t get_damage_number(object::get_damage_number33,588
-  int32_t get_damage_sides(object::get_damage_sides38,667
-  char get_symbol(object::get_symbol43,744
-  uint32_t get_color(object::get_color48,820
-  const char *get_name(object::get_name53,872
-  int32_t get_speed(object::get_speed58,933
-  int32_t roll_dice(object::roll_dice63,984
-  int32_t get_type(object::get_type68,1043
-  uint32_t get_rarity(object::get_rarity73,1092
-  bool get_artifact(object::get_artifact78,1146
-  bool have_seen(object::have_seen83,1200
-  void has_been_seen(object::has_been_seen88,1250
+class object9,99
+    const std::string &name;object::name12,125
+    const std::string &description;object::description13,154
+    object_type_t type;object::type14,190
+    uint32_t color;object::color15,214
+    pair_t position;object::position16,234
+    const dice &damage;object::damage17,255
+    int32_t hit,object::hit18,279
+    int32_t hit, dodge,object::dodge18,279
+    int32_t hit, dodge, defence,object::defence18,279
+    int32_t hit, dodge, defence, weight,object::weight18,279
+    int32_t hit, dodge, defence, weight, speed,object::speed18,279
+    int32_t hit, dodge, defence, weight, speed, attribute,object::attribute18,279
+    int32_t hit, dodge, defence, weight, speed, attribute, value;object::value18,279
+    uint32_t rarity;object::rarity19,345
+    bool artifact;object::artifact20,366
+    bool seen;object::seen21,385
+    object *next;object::next22,400
+  int32_t get_damage_base(object::get_damage_base26,504
+  int32_t get_damage_number(object::get_damage_number30,576
+  int32_t get_damage_sides(object::get_damage_sides34,652
+  char get_symbol(object::get_symbol38,726
+  uint32_t get_color(object::get_color42,799
+  const char *get_name(object::get_name46,848
+  int32_t get_speed(object::get_speed50,906
+  int32_t roll_dice(object::roll_dice54,954
+  int32_t get_type(object::get_type58,1010
+  uint32_t get_rarity(object::get_rarity62,1056
+  bool get_artifact(object::get_artifact66,1107
+  bool have_seen(object::have_seen70,1158
+  void has_been_seen(object::has_been_seen74,1202
 
-path.h,60
+path.h,93
 # define PATH_H2,15
-typedef struct dungeon dungeon_t;4,32
+# define HARDNESS_PER_TURN 4,32
+typedef struct dungeon dungeon_t;6,63
 
-pc.h,176
+pc.h,178
 # define PC_H2,13
-typedef struct dungeon dungeon_t;9,92
-class pc 26,742
-  terrain_type_t known_terrain[pc::known_terrain28,781
-  unsigned char visible[pc::visible29,835
+typedef struct dungeon dungeon_t;10,116
+class pc 24,740
+  terrain_type_t known_terrain[pc::known_terrain26,779
+  unsigned char visible[pc::visible27,833
 
 utils.h,77
 # define UTILS_H2,16
-# define rand_under(8,168
-# define rand_range(12,311
+# define rand_under(6,166
+# define rand_range(10,309

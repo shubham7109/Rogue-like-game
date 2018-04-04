@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "move.h"
 #include "path.h"
+#include "io.h"
 
 void delete_pc(character *the_pc)
 {
@@ -79,6 +80,43 @@ uint32_t pc_next_pos(dungeon_t *d, pair_t dir)
     dir_nearest_wall(d, d->pc, dir);
   }
 
+  /* Don't move to an unoccupied location if that places us next to a monster */
+  /*if (!charxy(d->PC->position[dim_x] + dir[dim_x],
+              d->PC->position[dim_y] + dir[dim_y]) &&
+      ((charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
+               d->PC->position[dim_y] + dir[dim_y] - 1) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
+                d->PC->position[dim_y] + dir[dim_y] - 1) != d->PC)) ||
+       (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
+               d->PC->position[dim_y] + dir[dim_y]) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
+                d->PC->position[dim_y] + dir[dim_y]) != d->PC)) ||
+       (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
+               d->PC->position[dim_y] + dir[dim_y] + 1) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x] - 1,
+                d->PC->position[dim_y] + dir[dim_y] + 1) != d->PC)) ||
+       (charxy(d->PC->position[dim_x] + dir[dim_x],
+               d->PC->position[dim_y] + dir[dim_y] - 1) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x],
+                d->PC->position[dim_y] + dir[dim_y] - 1) != d->PC)) ||
+       (charxy(d->PC->position[dim_x] + dir[dim_x],
+               d->PC->position[dim_y] + dir[dim_y] + 1) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x],
+                d->PC->position[dim_y] + dir[dim_y] + 1) != d->PC)) ||
+       (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
+               d->PC->position[dim_y] + dir[dim_y] - 1) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
+                d->PC->position[dim_y] + dir[dim_y] - 1) != d->PC)) ||
+       (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
+               d->PC->position[dim_y] + dir[dim_y]) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
+                d->PC->position[dim_y] + dir[dim_y]) != d->PC)) ||
+       (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
+               d->PC->position[dim_y] + dir[dim_y] + 1) &&
+        (charxy(d->PC->position[dim_x] + dir[dim_x] + 1,
+                d->PC->position[dim_y] + dir[dim_y] + 1) != d->PC)))) {
+    dir[dim_x] = dir[dim_y] = 0;
+  }*/
   return 0;
 }
 
@@ -160,7 +198,7 @@ void pc_observe_terrain(character *the_pc, dungeon_t *d)
     can_see(d, p->position, where, 1);
     where[dim_y] = y_max;
     can_see(d, p->position, where, 1);
-  }       
+  }
 }
 
 int32_t is_illuminated(character *the_pc, int8_t y, int8_t x)

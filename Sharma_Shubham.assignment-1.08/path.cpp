@@ -1,5 +1,6 @@
 #include "path.h"
 #include "dungeon.h"
+#include "pc.h"
 
 /* Ugly hack: There is no way to pass a pointer to the dungeon into the *
  * heap's comparitor funtion without modifying the heap.  Copying the   *
@@ -138,6 +139,11 @@ void dijkstra(dungeon_t *d)
   heap_delete(&h);
 }
 
+/* Ignores the case of hardness == 255, because if *
+ * that gets here, there's already been an error.  */
+#define tunnel_movement_cost(x, y)                      \
+  ((d->hardness[y][x] / 85) + 1)
+
 void dijkstra_tunnel(dungeon_t *d)
 {
   /* Currently assumes that monsters only move on floors.  Will *
@@ -145,6 +151,7 @@ void dijkstra_tunnel(dungeon_t *d)
 
   heap_t h;
   uint32_t x, y;
+  //uint32_t size;
   static path_t p[DUNGEON_Y][DUNGEON_X], *c;
   static uint32_t initialized = 0;
 

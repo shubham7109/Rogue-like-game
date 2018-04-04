@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <cstdlib>
 
+/* Very slow seed: 686846853 */
+
 #include "dungeon.h"
 #include "path.h"
 #include "pc.h"
@@ -64,8 +66,6 @@ const char *tombstone =
   "..\"\"\"\"\"....\"\"\"\"\"..\"\"...\"\"\".\n\n"
   "            You're dead.  Better luck in the next life.\n\n\n";
 
-
-
 void usage(char *name)
 {
   fprintf(stderr,
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
   dungeon_t d;
   time_t seed;
   struct timeval tv;
-  uint32_t i;
+  int32_t i;
   uint32_t do_load, do_save, do_seed, do_image;
   uint32_t long_arg;
   char *save_file;
@@ -95,14 +95,14 @@ int main(int argc, char *argv[])
   do_load = do_save = do_image = 0;
   do_seed = 1;
   save_file = NULL;
-  d.max_monsters = 10;
+  d.max_monsters = MAX_MONSTERS;
   d.max_objects = 15;
 
   /* The project spec requires '--load' and '--save'.  It's common  *
    * to have short and long forms of most switches (assuming you    *
    * don't run out of letters).  For now, we've got plenty.  Long   *
    * forms use whole words and take two dashes.  Short forms use an *
-`   * abbreviation after a single dash.  We'll add '--rand' (to     *
+    * abbreviation after a single dash.  We'll add '--rand' (to     *
    * specify a random seed), which will take an argument of it's    *
    * own, and we'll add short forms for all three commands, '-l',   *
    * '-s', and '-r', respectively.  We're also going to allow an    *
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
    * And the final switch, '--image', allows me to create a dungeon *
    * from a PGM image, so that I was able to create those more      *
    * interesting test dungeons for you.                             */
- 
+
  if (argc > 1) {
     for (i = 1, long_arg = 0; i < argc; i++, long_arg = 0) {
       if (argv[i][0] == '-') { /* All switches start with a dash */
@@ -236,8 +236,6 @@ int main(int argc, char *argv[])
 
   printf(pc_is_alive(&d) ? victory : tombstone);
 
-  /* PC can't be deleted with the dungeon, else *
-   * it disappears when we use the stairs.      */
   if (pc_is_alive(&d)) {
     /* If the PC is dead, it's in the move heap and will get automatically *
      * deleted when the heap destructs.  In that case, we can't call       *
