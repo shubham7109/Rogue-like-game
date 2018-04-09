@@ -127,19 +127,26 @@ void do_combat(dungeon *d, character *atk, character *def)
   else{
     damage += atk->damage->roll();
   }
-  if(atk == d->PC) {
-    io_queue_message("You attacked the %s for %d.", def->name, damage);
-  }
-  else {
-    io_queue_message("The %s attacked you for %d.", atk->name, damage);
-  }
 
   def->hp -= damage;
   int def_hp = def->hp;
+  if(def_hp<0)
+    def_hp =0;
+
+  if(atk == d->PC) {
+    io_queue_message("You damaged %s for %d!", def->name, damage);
+    io_queue_message("It's heath is now: %d", def_hp);
+  }
+  if (def == d->PC) {
+    io_queue_message("%s damaged %d of your health", atk->name, damage);
+  }
+
+
   if(def_hp <= 0){
     def->alive = 0;
     if(atk == d->PC){
       d->num_monsters--;
+      io_queue_message("You killed the monster %s", def->name);
     }
 
     charpair(def->position) = NULL;
@@ -147,8 +154,6 @@ void do_combat(dungeon *d, character *atk, character *def)
        atk->kills[kill_avenged] += (def->kills[kill_direct] +
                                     def->kills[kill_avenged]);
   }
-
-
 }
 
 void move_character(dungeon *d, character *c, pair_t next)
