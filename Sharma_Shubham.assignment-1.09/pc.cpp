@@ -10,6 +10,89 @@
 #include "io.h"
 #include "object.h"
 
+
+int pc::wear_item(int position){
+
+  object *obj;
+  uint32_t in;
+
+  if (!carry_slot[position]) {
+    io_queue_message("There is no object on the floor");
+    return 1;
+  }
+  in = carry_slot[position]->get_type() - 1;
+
+  if(in > objtype_SCROLL - 1){
+    io_queue_message("This item cannot be worn");
+    return 1;
+  }
+
+  if(carry_slot[position]->get_type() == objtype_RING &&
+    equipment_slot[in] &&
+    !equipment_slot[in++]){
+      in++;
+    }
+
+  obj = carry_slot[position];
+
+  carry_slot[position] = equipment_slot[in];
+
+  equipment_slot[in] = obj;
+
+  io_queue_message("Item %s successfully worn! Use 't' to take off item",
+  equipment_slot[in]->get_name());
+  update_speed();
+  return 0;
+
+}
+
+int pc::take_off_item(object *o){
+
+  if (!o) {
+    io_queue_message("There is no item in the selected position :(");
+    return 1;
+  }
+  else if(is_space_available() == -1){
+    io_queue_message("The carry slot is full! Use 'd' to make some room in the slot");
+    return 1;
+  }
+  carry_slot[is_space_available()] = o;
+  io_queue_message("Took off the item. The item %s is now placed in the carry slot!",
+  o->get_name());
+  update_speed();
+
+  return 0;
+}
+
+int pc::drop_item(dungeon *d, object *o){
+
+  if (!o) {
+    io_queue_message("Cannot be dropped as there is no item in this position. Try again!");
+    return 1;
+  }
+  else if(objpair(position)){
+    io_queue_message("Failed to drop item. There is an item on the floor. Try moving to a different position!");
+    return 1;
+  }
+  objpair(position) = o;
+  io_queue_message("Item %s successfully dropped to the floor! Walk over it again to pick it up",
+  o->get_name());
+  return 0;
+
+}
+
+int pc::expunge_item(object *o){
+
+    if (!o) {
+      io_queue_message("This position does not contain an item. Try a different position!");
+      return 1;
+    }
+    io_queue_message("Expunged item %s from the face of Earrth!!", o->get_name());
+    delete o;
+    return 0;
+
+}
+
 int pc::is_space_available(){
   int i=0;
   for( i=0 ; i < MAX_CARRY ; i++){
@@ -18,6 +101,39 @@ int pc::is_space_available(){
   }
 
   return -1; // No available space
+}
+
+int pc::item_pickup(dungeon *d){
+
+  if(is_space_available() != -1 && objpair(position)){
+    carry_slot[is_space_available()] = objpair(position);
+    io_queue_message("Picked up a item: %s!  Try 'd' to drop an item",
+    objpair(position)->get_name());
+    objpair(position) = 0;
+  }
+
+  else if(is_space_available() == -1 && objpair(position)){
+    io_queue_message("Carry slot is full. Cannot pick up item: %s! Try 'd' to drop an item",
+    objpair(position)->get_name());
+  }
+  return 0;
+}
+
+int pc::update_speed(){
+  speed = DEFAULT_SPEED;
+  int i=0;
+
+  for(i = 0; i < MAX_EQUIP; i++){
+    if(equipment_slot[i]){
+      speed += equipment_slot[i]->get_speed();
+    }
+  }
+
+  if(speed < 1) {
+    speed = 1;
+  }
+
+  return 0;
 }
 
 uint32_t pc_is_alive(dungeon_t *d)
@@ -58,10 +174,21 @@ void config_pc(dungeon_t *d)
   d->PC->damage = &pc_dice;
   d->PC->name = "Isabella Garcia-Shapiro";
 
+  d->PC->hp = 5000;
+
+  int i;
+  for(i = 0; i < MAX_EQUIP; i++){
+    d->PC->equipment_slot[i] = NULL;
+  }
+  for(i = 0; i < MAX_CARRY; i++){
+    d->PC->carry_slot[i] = NULL;
+  }
+
   d->character_map[character_get_y(d->PC)][character_get_x(d->PC)] = d->PC;
 
   dijkstra(d);
   dijkstra_tunnel(d);
+  io_calculate_offset(d);
 }
 
 uint32_t pc_next_pos(dungeon_t *d, pair_t dir)

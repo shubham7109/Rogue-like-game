@@ -359,14 +359,17 @@ path.h,93
 # define HARDNESS_PER_TURN 4,32
 typedef struct dungeon dungeon_t;6,63
 
-pc.h,249
+pc.h,331
 # define PC_H2,13
-class pc 10,116
-  ~pc(pc::~pc12,155
-  terrain_type_t known_terrain[pc::known_terrain13,166
-  uint8_t visible[pc::visible14,220
-  object *carry_slot[pc::carry_slot16,262
-  object *equipment_slot[pc::equipment_slot17,288
+#define MAX_CARRY 10,116
+#define MAX_EQUIP 11,150
+#define DEFAULT_SPEED 12,184
+class pc 14,219
+  ~pc(pc::~pc16,258
+  terrain_type_t known_terrain[pc::known_terrain17,269
+  uint8_t visible[pc::visible18,323
+  object *carry_slot[pc::carry_slot20,365
+  object *equipment_slot[pc::equipment_slot21,398
 
 utils.h,77
 # define UTILS_H2,16

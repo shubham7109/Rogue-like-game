@@ -9,6 +9,7 @@
 
 #define MAX_CARRY              10
 #define MAX_EQUIP              12
+#define DEFAULT_SPEED          10
 
 class pc : public character {
  public:
@@ -23,7 +24,7 @@ class pc : public character {
   int drop_item(dungeon *d, object *o);
   int expunge_item(object *o);
   int is_space_available();
-  int object_pickup(dungeon *d);
+  int item_pickup(dungeon *d);
   int update_speed();
 };
 
