@@ -7,11 +7,24 @@
 # include "character.h"
 # include "dungeon.h"
 
+#define MAX_CARRY              10
+#define MAX_EQUIP              12
+
 class pc : public character {
  public:
   ~pc() {}
   terrain_type_t known_terrain[DUNGEON_Y][DUNGEON_X];
   uint8_t visible[DUNGEON_Y][DUNGEON_X];
+
+  object *carry_slot[MAX_CARRY];
+  object *equipment_slot[MAX_EQUIP];
+  int wear_item(int position);
+  int take_off_item(object *o);
+  int drop_item(dungeon *d, object *o);
+  int expunge_item(object *o);
+  int is_space_available();
+  int object_pickup(dungeon *d);
+  int update_speed();
 };
 
 void pc_delete(pc *pc);

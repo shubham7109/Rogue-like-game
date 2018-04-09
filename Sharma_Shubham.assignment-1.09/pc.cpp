@@ -10,6 +10,16 @@
 #include "io.h"
 #include "object.h"
 
+int pc::is_space_available(){
+  int i=0;
+  for( i=0 ; i < MAX_CARRY ; i++){
+    if(!carry_slot[i])
+      return i; // Returns the position of the slot
+  }
+
+  return -1; // No available space
+}
+
 uint32_t pc_is_alive(dungeon_t *d)
 {
   return d->PC && d->PC->alive;
@@ -239,7 +249,7 @@ void pc_observe_terrain(pc *p, dungeon_t *d)
     can_see(d, p->position, where, 1, 1);
     where[dim_y] = y_max;
     can_see(d, p->position, where, 1, 1);
-  }       
+  }
 }
 
 int32_t is_illuminated(pc *p, int16_t y, int16_t x)
