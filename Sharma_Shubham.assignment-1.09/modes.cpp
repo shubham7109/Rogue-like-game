@@ -13,7 +13,6 @@
 #include "npc.h"
 #include "io.h"
 
-
 void wear_item_mode(dungeon_t *d)
 {
   int32_t key;
@@ -412,80 +411,7 @@ void inspect_item_mode(dungeon_t *d)
 
 void look_monster_mode(dungeon_t *d)
 {
-  int32_t key;
-
-  do {
-    if ((key = getch()) == 27 /* ESC */) {
-      io_display(d);
-      return;
-    }
-
-    switch (key) {
-    case '1':
-    case 'b':
-    case KEY_END:
-    case '2':
-    case 'j':
-    case KEY_DOWN:
-    case '3':
-    case 'n':
-    case KEY_NPAGE:
-      break;
-    case '4':
-    case 'h':
-    case KEY_LEFT:
-    case '5':
-    case ' ':
-    case KEY_B2:
-    case '6':
-    case 'l':
-    case KEY_RIGHT:
-      break;
-    case '7':
-    case 'y':
-    case KEY_HOME:
-    case '8':
-    case 'k':
-    case KEY_UP:
-    case '9':
-    case 'u':
-    case KEY_PPAGE:
-      break;
-    }
-    switch (key) {
-    case '1':
-    case 'b':
-    case KEY_END:
-    case '4':
-    case 'h':
-    case KEY_LEFT:
-    case '7':
-    case 'y':
-    case KEY_HOME:
-      break;
-    case '2':
-    case 'j':
-    case KEY_DOWN:
-    case '5':
-    case ' ':
-    case KEY_B2:
-    case '8':
-    case 'k':
-    case KEY_UP:
-      break;
-    case '3':
-    case 'n':
-    case KEY_NPAGE:
-    case '6':
-    case 'l':
-    case KEY_RIGHT:
-    case '9':
-    case 'u':
-    case KEY_PPAGE:
-      break;
-    }
-    io_display(d);
-  } while (1);
+  
 }
 
 void display_monster_list(dungeon_t *d)
