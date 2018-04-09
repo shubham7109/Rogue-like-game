@@ -281,6 +281,9 @@ macros.h,611
 # define frand(173,7872
 # define structdup(180,7984
 
+modes.h,22
+# define MODES_H2,16
+
 move.h,21
 # define MOVE_H2,15
 
@@ -328,7 +331,7 @@ class npc 50,1561
   const char *description;npc::description57,1753
   monster_description &md;npc::md58,1780
 
-object.h,1206
+object.h,1268
 # define OBJECT_H2,17
 class object 9,103
   const std::string &name;object::name11,128
@@ -353,6 +356,7 @@ class object 9,103
   bool have_seen(object::have_seen42,850
   void has_been_seen(object::has_been_seen43,886
   int16_t *get_position(object::get_position44,926
+  const char *get_description(object::get_description45,973
 
 path.h,93
 # define PATH_H2,15

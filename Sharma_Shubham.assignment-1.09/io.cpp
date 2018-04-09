@@ -11,6 +11,7 @@
 #include "dungeon.h"
 #include "object.h"
 #include "npc.h"
+#include "modes.h"
 
 /* Same ugly hack we did in path.c */
 static dungeon *the_dungeon;
@@ -396,7 +397,7 @@ void io_display(dungeon *d)
     }
   }
 
-  mvprintw(23, 0, "PC position is (%3d,%2d).",
+  mvprintw(23, 0, " PC position is (%3d,%2d).",
            character_get_x(d->PC), character_get_y(d->PC));
 
   mvprintw(22, 1, "%d known %s.", visible_monsters,
@@ -416,6 +417,7 @@ void io_display(dungeon *d)
 
   io_print_message_queue(0, 0);
 
+  mvprintw(25, 0, " \t PC Hitpoints: %d \t PC Speed: %d", d->PC->hp, d->PC->speed);
   refresh();
 }
 
@@ -670,7 +672,7 @@ uint32_t io_teleport_pc(dungeon *d)
 
   if (charpair(dest) && charpair(dest) != d->PC) {
     io_queue_message("Teleport failed.  Destination occupied.");
-  } else {  
+  } else {
     d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = NULL;
     d->character_map[dest[dim_y]][dest[dim_x]] = d->PC;
 
@@ -940,12 +942,36 @@ void io_handle_input(dungeon *d)
       io_display(d);
       fail_code = 1;
       break;
-    case 'L':
+    case 'w':
+      wear_item_mode(d);
       fail_code = 1;
       break;
     case 't':
-      /* Teleport the PC to a random place in the dungeon.              */
-      io_teleport_pc(d);
+      take_off_item_mode(d);
+      fail_code = 1;
+      break;
+    case 'd':
+      drop_item_mode(d);
+      fail_code = 1;
+      break;
+    case 'x':
+      expunge_item_mode(d);
+      fail_code = 1;
+      break;
+    case 'i':
+      list_inventory_mode(d);
+      fail_code = 1;
+      break;
+    case 'e':
+      list_equipment_mode(d);
+      fail_code = 1;
+      break;
+    case 'I':
+      inspect_item_mode(d);
+      fail_code = 1;
+      break;
+    case 'L':
+      look_monster_mode(d);
       fail_code = 1;
       break;
     case 'm':

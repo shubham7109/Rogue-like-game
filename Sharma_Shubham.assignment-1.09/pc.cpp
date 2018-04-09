@@ -188,7 +188,6 @@ void config_pc(dungeon_t *d)
 
   dijkstra(d);
   dijkstra_tunnel(d);
-  io_calculate_offset(d);
 }
 
 uint32_t pc_next_pos(dungeon_t *d, pair_t dir)
