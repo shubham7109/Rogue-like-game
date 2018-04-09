@@ -397,7 +397,7 @@ void io_display(dungeon *d)
       }
     }
   }
-
+  mvprintw(25, 0, " \t PC Hitpoints: %d \t PC Speed: %d", d->PC->hp, d->PC->speed);
   mvprintw(23, 0, " PC position is (%3d,%2d).",
            character_get_x(d->PC), character_get_y(d->PC));
 
@@ -418,7 +418,7 @@ void io_display(dungeon *d)
 
   io_print_message_queue(0, 0);
 
-  mvprintw(25, 0, " \t PC Hitpoints: %d \t PC Speed: %d", d->PC->hp, d->PC->speed);
+
   refresh();
 }
 

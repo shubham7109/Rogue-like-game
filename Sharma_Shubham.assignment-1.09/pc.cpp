@@ -174,7 +174,7 @@ void config_pc(dungeon_t *d)
   d->PC->damage = &pc_dice;
   d->PC->name = "Isabella Garcia-Shapiro";
 
-  d->PC->hp = 5000;
+  d->PC->hp = 100; // TODO how much health should a PC have? 
 
   int i;
   for(i = 0; i < MAX_EQUIP; i++){
