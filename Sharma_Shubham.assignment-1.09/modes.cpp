@@ -416,6 +416,7 @@ void inspect_item_mode(dungeon_t *d)
 
 void look_monster_mode(dungeon_t *d)
 {
+clear();
   pair_t dest;
   int c;
   fd_set readfs;
@@ -423,7 +424,7 @@ void look_monster_mode(dungeon_t *d)
 
   io_display_no_fog(d);
 
-  mvprintw(0, 0, "Choose a location.  't' to teleport to");
+  mvprintw(0, 0, "Choose a location");
 
   dest[dim_y] = d->PC->position[dim_y];
   dest[dim_x] = d->PC->position[dim_x];
@@ -542,25 +543,31 @@ void look_monster_mode(dungeon_t *d)
       break;
     }
   } while (c != 'L');
-
-  if (c == 'L') {
-    pair_t pair ;
+  
+  pair_t pair;
+  pair[dim_y] = dest[dim_y];
+  pair[dim_x] = dest[dim_x];
+  
+  if(c == 'L' && charpair(pair)->symbol != '@')
+  {
     std::string description;
-    pair[dim_y] = dest[dim_y];
-    pair[dim_x] = dest[dim_x];
-    clear();
-    if(charpair(pair) == NULL )
-      return;
-    else{
-          int i=0;
-          for(i=0; (unsigned) d->monster_descriptions.size(); i++){
-            if(charpair(pair)->name == d->monster_descriptions[i].name){
-              description = d->monster_descriptions[i].get_monster_description();
-            }
-          }
-            mvprintw(4, 1, "|::::::::::::::::::::::::::::::::::::::::::::::::::::::::::|");
-            mvprintw(5, 1, "| %-55s  |", charpair(pair)->name);
-            mvprintw(6, 1, "| %s",description.c_str());
-        }
+    for(int i = 0; (unsigned)i < d->monster_descriptions.size(); i++)
+    {
+      if(charpair(pair)->name == d->monster_descriptions[i].name)
+      {
+	description = d->monster_descriptions[i].get_description();
       }
+    }
+    clear();
+    refresh();
+    mvprintw(0, 1, "|::::::::::::::::::::::::::::::::::::::::::::::::::::::::::|");
+    mvprintw(1, 1, "|%-58s|", " Press escape to exit");
+    mvprintw(2, 1, "|::::::::::::::::::::::::::::::::::::::::::::::::::::::::::|");
+    mvprintw(3, 1, "|Name: %-52s|", charpair(pair)->name);
+    mvprintw(5, 1, "Description:\n %s", description.c_str());
+    
+    refresh();
+    while(getch()!= 27);
+  }
+  io_display(d);
 }
