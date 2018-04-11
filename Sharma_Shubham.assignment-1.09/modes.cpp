@@ -543,12 +543,12 @@ clear();
       break;
     }
   } while (c != 'L');
-  
+
   pair_t pair;
   pair[dim_y] = dest[dim_y];
   pair[dim_x] = dest[dim_x];
-  
-  if(c == 'L' && charpair(pair)->symbol != '@')
+
+  if(c == 'L' && !(charpair(pair) == NULL))
   {
     std::string description;
     for(int i = 0; (unsigned)i < d->monster_descriptions.size(); i++)
@@ -565,7 +565,7 @@ clear();
     mvprintw(2, 1, "|::::::::::::::::::::::::::::::::::::::::::::::::::::::::::|");
     mvprintw(3, 1, "|Name: %-52s|", charpair(pair)->name);
     mvprintw(5, 1, "Description:\n %s", description.c_str());
-    
+
     refresh();
     while(getch()!= 27);
   }

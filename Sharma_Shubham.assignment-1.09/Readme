@@ -1,0 +1,19 @@
+COMS327-Assignment 1.08: PC Equipment and Updated Combat
+To execute the code, run the following commands:
+
+1)To load a file
+
+make
+./rlg327
+
+
+This project allowes to user to use the object agains the monster (finally!) :)
+
+MAKE SURE TO run the terminal maximized, as it prints off the screen from the default terminal size. 
+
+The project was mostly codeded using modes.cpp and modes.h. It heavily implements io queue as I found it pretty helpful for debugging purposes.
+Please be patient and there are a lot of messages, but all the instructions should all be on scree to help out. The project was tested for errors
+and none were found.
+
+
+For any problems, please contact: shubham@iastate.edu
