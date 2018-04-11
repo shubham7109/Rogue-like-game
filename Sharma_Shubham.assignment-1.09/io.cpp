@@ -12,6 +12,7 @@
 #include "object.h"
 #include "npc.h"
 #include "modes.h"
+#include "character.h"
 
 /* Same ugly hack we did in path.c */
 static dungeon *the_dungeon;
@@ -422,7 +423,7 @@ void io_display(dungeon *d)
   refresh();
 }
 
-static void io_redisplay_non_terrain(dungeon *d, pair_t cursor)
+void io_redisplay_non_terrain(dungeon *d, pair_t cursor)
 {
   /* For the wiz-mode teleport, in order to see color-changing effects. */
   pair_t pos;

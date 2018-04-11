@@ -42,7 +42,7 @@ extern const char object_symbol[];
 class npc;
 
 class monster_description {
- private:
+public:
   std::string name, description;
   char symbol;
   std::vector<uint32_t> color;
@@ -78,6 +78,9 @@ class monster_description {
   std::ostream &print(std::ostream &o);
   char get_symbol() { return symbol; }
   static npc *generate_monster(dungeon_t *d);
+  inline const std::string &get_monster_description() const {
+    return description;
+  }
   inline void birth()
   {
     num_alive++;
