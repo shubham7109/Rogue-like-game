@@ -22,7 +22,7 @@
 #define PC_SPEED               10
 #define MAX_MONSTERS           12
 #define MAX_OBJECTS            12
-#define SAVE_DIR               ".rlg327"
+#define SAVE_DIR               "COMS327/Sharma_Shubham.assignment-1.09"
 #define DUNGEON_SAVE_FILE      "dungeon"
 #define DUNGEON_SAVE_SEMANTIC  "RLG327-S2018"
 #define DUNGEON_SAVE_VERSION   0U
