@@ -1150,6 +1150,126 @@ static uint32_t io_inspect_in(dungeon_t *d)
 
   return 1;
 }
+
+void do_combats(dungeon_t *d, character *atk, character *def)
+{
+  uint32_t damage, i;
+  const char *organs[] = {
+    "liver",
+    "pancreas",
+    "heart",
+    "brain",
+    "eye",
+    "arm",
+    "leg",
+    "intestines",
+    "gall bladder",
+    "lungs",
+    "hand",
+    "foot",
+    "spinal cord",
+    "pituitary gland",
+    "thyroid",
+    "tongue",
+    "bladder",
+    "diaphram",
+    "frontal lobe",
+    "hippocampus",
+    "stomach",
+    "pharynx",
+    "esophagus",
+    "trachea",
+    "urethra",
+    "spleen",
+    "cerebellum",
+    "ganglia",
+    "ear",
+    "subcutaneous tissue",
+    "prefrontal cortex"
+  };
+  const char *attacks[] = {
+    "punches",
+    "kicks",
+    "stabs",
+    "impales",
+    "slashes",
+    "massages",
+    "soothes",
+    "bites",
+    "jabs",
+    "coerces",
+    "threatens",
+    "manipulates",
+    "arm locks",
+    "conquers",
+    "buries the hatchet in",
+    "indicates displeasure with",
+    "quarrels with",
+    "scrimmages with",
+    "tickles",
+    "engages in fisticuffs with",
+    "strikes",
+    "belts",
+    "wallops",
+    "gives the old one-two to",
+    "bumps into",
+    "behaves inappropriately with",
+    "smacks",
+    "body slams",
+    "fondues",
+    "flambes",
+    "pokes",
+    "anoints",
+  };
+  if (character_is_alive(def)) {
+    if (atk != d->PC) {
+      damage = atk->damage->roll();
+      io_queue_message("%s%s %s your %s for %d.", is_unique(atk) ? "" : "The ",
+                       atk->name, attacks[rand() % (sizeof (attacks) /
+                                                    sizeof (attacks[0]))],
+                       organs[rand() % (sizeof (organs) /
+                                        sizeof (organs[0]))], damage);
+    } else {
+      for (i = damage = 0; i < num_eq_slots; i++) {
+        if (i == eq_slot_weapon && !d->PC->eq[i]) {
+          damage += atk->damage->roll();
+        } else if (d->PC->eq[i]) {
+          damage += d->PC->eq[i]->roll_dice();
+        }
+      }
+      io_queue_message("You hit %s%s for %d.", is_unique(def) ? "" : "the ",
+                       def->name, damage);
+    }
+
+    if (damage >= def->hp) {
+      if (atk != d->PC) {
+        io_queue_message("You die.");
+        io_queue_message("As %s%s eats your %s,", is_unique(atk) ? "" : "the ",
+                         atk->name, organs[rand() % (sizeof (organs) /
+                                                     sizeof (organs[0]))]);
+        io_queue_message("   ...you wonder if there is an afterlife.");
+        /* Queue an empty message, otherwise the game will not pause for *
+         * player to see above.                                          */
+        io_queue_message("");
+      } else {
+        io_queue_message("%s%s dies.", is_unique(def) ? "" : "The ", def->name);
+      }
+      def->hp = 0;
+      def->alive = 0;
+      character_increment_dkills(atk);
+      character_increment_ikills(atk, (character_get_dkills(def) +
+                                       character_get_ikills(def)));
+      if (def != d->PC) {
+        d->num_monsters--;
+      }
+      charpair(def->position) = NULL;
+    } else {
+      def->hp -= damage;
+    }
+  }
+}
+
+
 static uint32_t io_inspect_range(dungeon_t *d)
 {
   //uint32_t n;
@@ -1313,26 +1433,17 @@ static uint32_t io_inspect_range(dungeon_t *d)
     io_display(d);
     return 1;
   }
-  uint32_t damage=0;
-  int i;
 
   if(d->PC->eq[2]){
-    damage = d->PC->eq[2]->roll_dice();
+    io_queue_message("Monster before: %d",charpair(dest)->hp);
+    //damage = d->PC->eq[2]->roll_dice();
+     //charpair(dest)->hp -= damage;
+     do_combats(d,d->PC,charpair(dest));
+     io_queue_message("Monster after: %d",charpair(dest)->hp);
   }
   else{
     io_queue_message("Cannot do range attack without RANGE object!");
   }
-
-  //
-  // for (i = 0; i < num_eq_slots; i++) {
-  //   sprintf(s, "[%s]", );
-  //   io_object_to_string(d->PC->eq[i], t, 61);
-  //   mvprintw(i + 5, 10, " %c %-9s) %-45s ", 'a' + i, s, t);
-  // }
-
-
-
-  io_queue_message("Attacked monster for %d", damage);
 
   refresh();
   io_display(d);
