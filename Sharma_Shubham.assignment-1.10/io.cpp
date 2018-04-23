@@ -31,6 +31,7 @@ void io_init_terminal(void)
   raw();
   noecho();
   curs_set(0);
+  ESCDELAY = 1; // REMOVE THE ESCAPE KEY DELAY
   keypad(stdscr, TRUE);
   start_color();
   init_pair(COLOR_RED, COLOR_RED, COLOR_BLACK);
@@ -677,7 +678,7 @@ uint32_t io_teleport_pc(dungeon *d)
 
   if (charpair(dest) && charpair(dest) != d->PC) {
     io_queue_message("Teleport failed.  Destination occupied.");
-  } else {  
+  } else {
     d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = NULL;
     d->character_map[dest[dim_y]][dest[dim_x]] = d->PC;
 
@@ -1091,7 +1092,7 @@ static uint32_t io_display_obj_info(object *o)
   refresh();
   getch();
 
-  return 0;  
+  return 0;
 }
 
 static uint32_t io_inspect_eq(dungeon_t *d);
@@ -1148,6 +1149,195 @@ static uint32_t io_inspect_in(dungeon_t *d)
   }
 
   return 1;
+}
+static uint32_t io_inspect_range(dungeon_t *d)
+{
+  //uint32_t n;
+  pair_t dest, tmp;
+  int c;
+  fd_set readfs;
+  struct timeval tv;
+  //char s[80];
+  //const char *p;
+
+  io_display(d);
+
+  mvprintw(0, 0, "Range: Choose a monster, 'A' to attack! & 'ESC' to cancel.");
+
+  dest[dim_y] = d->PC->position[dim_y];
+  dest[dim_x] = d->PC->position[dim_x];
+
+  mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+  refresh();
+
+  do {
+    do{
+      FD_ZERO(&readfs);
+      FD_SET(STDIN_FILENO, &readfs);
+
+      tv.tv_sec = 0;
+      tv.tv_usec = 125000; /* An eigth of a second */
+
+      io_redisplay_visible_monsters(d, dest);
+    } while (!select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tv));
+    /* Can simply draw the terrain when we move the cursor away, *
+     * because if it is a character or object, the refresh       *
+     * function will fix it for us.                              */
+    switch (mappair(dest)) {
+    case ter_wall:
+    case ter_wall_immutable:
+    case ter_unknown:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], ' ');
+      break;
+    case ter_floor:
+    case ter_floor_room:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '.');
+      break;
+    case ter_floor_hall:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '#');
+      break;
+    case ter_debug:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+      break;
+    case ter_stairs_up:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '<');
+      break;
+    case ter_stairs_down:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '>');
+      break;
+    default:
+ /* Use zero as an error symbol, since it stands out somewhat, and it's *
+  * not otherwise used.                                                 */
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '0');
+    }
+    tmp[dim_y] = dest[dim_y];
+    tmp[dim_x] = dest[dim_x];
+    switch ((c = getch())) {
+    case '7':
+    case 'y':
+    case KEY_HOME:
+      tmp[dim_y]--;
+      tmp[dim_x]--;
+      if (dest[dim_y] != 1 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != 1 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_x]--;
+      }
+      break;
+    case '8':
+    case 'k':
+    case KEY_UP:
+      tmp[dim_y]--;
+      if (dest[dim_y] != 1 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_y]--;
+      }
+      break;
+    case '9':
+    case 'u':
+    case KEY_PPAGE:
+      tmp[dim_y]--;
+      tmp[dim_x]++;
+      if (dest[dim_y] != 1 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_x]++;
+      }
+      break;
+    case '6':
+    case 'l':
+    case KEY_RIGHT:
+      tmp[dim_x]++;
+      if (dest[dim_x] != DUNGEON_X - 2 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_x]++;
+      }
+      break;
+    case '3':
+    case 'n':
+    case KEY_NPAGE:
+      tmp[dim_y]++;
+      tmp[dim_x]++;
+      if (dest[dim_y] != DUNGEON_Y - 2 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_x]++;
+      }
+      break;
+    case '2':
+    case 'j':
+    case KEY_DOWN:
+      tmp[dim_y]++;
+      if (dest[dim_y] != DUNGEON_Y - 2 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_y]++;
+      }
+      break;
+    case '1':
+    case 'b':
+    case KEY_END:
+      tmp[dim_y]++;
+      tmp[dim_x]--;
+      if (dest[dim_y] != DUNGEON_Y - 2 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != 1 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_x]--;
+      }
+      break;
+    case '4':
+    case 'h':
+    case KEY_LEFT:
+      tmp[dim_x]--;
+      if (dest[dim_x] != 1 &&
+          can_see(d, d->PC->position, tmp, 1, 0)) {
+        dest[dim_x]--;
+      }
+      break;
+    }
+  } while ((c == 'A' && (!charpair(dest) || charpair(dest) == d->PC)) ||
+           (c != 'A' && c != 27 /* ESC */));
+
+  if (c == 27 /* ESC */) {
+    io_display(d);
+    return 1;
+  }
+  uint32_t damage=0;
+  int i;
+
+  if(d->PC->eq[2]){
+    damage = d->PC->eq[2]->roll_dice();
+  }
+  else{
+    io_queue_message("Cannot do range attack without RANGE object!");
+  }
+
+  //
+  // for (i = 0; i < num_eq_slots; i++) {
+  //   sprintf(s, "[%s]", );
+  //   io_object_to_string(d->PC->eq[i], t, 61);
+  //   mvprintw(i + 5, 10, " %c %-9s) %-45s ", 'a' + i, s, t);
+  // }
+
+
+
+  io_queue_message("Attacked monster for %d", damage);
+
+  refresh();
+  io_display(d);
+
+  return 0;
 }
 
 static uint32_t io_inspect_monster(dungeon_t *d)
@@ -1333,12 +1523,12 @@ static uint32_t io_inspect_monster(dungeon_t *d)
   mvprintw(n + 4, 0, "Hit any key to continue. ");
 
   refresh();
-  
+
   getch();
 
   io_display(d);
 
-  return 0;  
+  return 0;
 }
 
 static uint32_t io_inspect_eq(dungeon_t *d)
@@ -1597,6 +1787,10 @@ void io_handle_input(dungeon *d)
       break;
     case 'L':
       io_inspect_monster(d);
+      fail_code = 1;
+      break;
+    case 'R':
+      io_inspect_range(d);
       fail_code = 1;
       break;
     case 'q':
