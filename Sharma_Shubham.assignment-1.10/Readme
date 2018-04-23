@@ -1,0 +1,11 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Assignment-1.10: Ranged Combat and Posion Spell
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+This project attempts to implement ranged combat and posion spell. The ranged combat works perfectly, but the poison spell is party implemented in the code.
+To run this code, use the files given in /description_files
+To use ranged combat:
+  Look for '}' and wear it. This is the ranged combat item. To utilize this ranged combat item, press 'R' and move to the monster to attack. To perform attack on
+  the monster press 'R'. This can be done as long as the monster is visible and '}' is equipped.
+To use poison spell:
+  Does not work according to expectations, but there is partial code in io.cpp. 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------

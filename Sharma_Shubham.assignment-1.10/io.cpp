@@ -1435,14 +1435,14 @@ static uint32_t io_inspect_range(dungeon_t *d)
   }
 
   if(d->PC->eq[2]){
-    io_queue_message("Monster before: %d",charpair(dest)->hp);
+    //io_queue_message("Monster before: %d",charpair(dest)->hp);
     //damage = d->PC->eq[2]->roll_dice();
      //charpair(dest)->hp -= damage;
      do_combats(d,d->PC,charpair(dest));
-     io_queue_message("Monster after: %d",charpair(dest)->hp);
+     //io_queue_message("Monster after: %d",charpair(dest)->hp);
   }
   else{
-    io_queue_message("Cannot do range attack without RANGE object!");
+    io_queue_message("Cannot do range attack without wearing RANGE object!");
   }
 
   refresh();
